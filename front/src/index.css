@@ -1,1 +1,31 @@
 @import "tailwindcss";
+
+@theme {
+  --color-brand: var(--brand);
+  --color-surface: var(--surface);
+  --color-text: var(--text);
+}
+
+:root {
+  --brand: #d4aa7d;
+  --surface: #f9fafb;
+  --text: #272727;
+}
+
+[data-theme="dark"] {
+  --brand: #d4aa7d;
+  --surface: #272727;
+  --text: #f9fafb;
+}
+
+[data-theme="sunset"] {
+  --brand: #f43f5e;
+  --surface: #4c0519;
+  --text: #ffe4e6;
+}
+
+@layer base {
+  body {
+    @apply bg-surface text-text;
+  }
+}
