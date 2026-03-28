@@ -33,7 +33,7 @@ async function Route(request: Request, url: URL): Promise<Response> {
                 return new Response("Missing request body", { status: 400 });
             }
             const user: User = JSON.parse(body);
-            await getUser(user);
+            await newUser(user);
             return new Response("");
         } catch (err) {
             console.error("Error registering user:", err);
@@ -47,11 +47,25 @@ async function Route(request: Request, url: URL): Promise<Response> {
                 return new Response("Missing request body", { status: 400 });
             }
             const user: User = JSON.parse(body);
-            await newUser(user);
+            await getUser(user);
             return new Response("Found user")
         } catch (err) {
             console.error("Error finding user: ", err);
             return new Response("Error registering user", { status: 500 });
+        }
+    }
+
+    if (url.pathname == APIEndpoints.UPDATE && request.method === 'PATCH') {
+        try {
+            if (!body) {
+                return new Response("Missing request body", { status: 400 });
+            }
+            const user: User = JSON.parse(body);
+            await updateUser(user);
+            return new Response("Updated theme")
+        } catch (err) {
+            console.error("Error updating theme: ", err);
+            return new Response("Error updating theme", { status: 500 });
         }
     }
     
@@ -86,6 +100,26 @@ async function getUser(user: User) {
         if (!result) throw `No user found for the following id: ${user.username}`;
          
         console.log(`Returned user with the following id: ${result.insertedId}`);
+    } catch (err) {
+        console.log(err);
+    }
+
+}
+
+async function updateUser(user: User) {
+    const uri = Bun.env.CONNECTION_STRING || "";
+    const client = new MongoClient(uri);
+    try {
+        const users = client.db(Bun.env.DB_NAME).collection(USER_DB)
+        await client.connect();
+        const result = await users.updateOne({username: user.username}, { theme: user.theme });
+        
+        if (!result) throw `No user found for the following id: ${user.username}`;
+        
+        if (result.acknowledged) {
+            console.log(`Updated user theme to: ${user.theme}`);
+        }
+        
     } catch (err) {
         console.log(err);
     }
