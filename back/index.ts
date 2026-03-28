@@ -1,6 +1,7 @@
 import { MongoClient } from 'mongodb';
-import { APIEndpoints, USER_DB } from './defines';
-import type { User } from '@shared/shared-types';
+import bcrypt from 'bcryptjs';
+import { USER_DB } from './defines';
+import { APIEndpoints, type User } from '@shared/shared-types';
 
 Bun.serve({
     port: Bun.env.PORT,
@@ -41,17 +42,25 @@ async function Route(request: Request, url: URL): Promise<Response> {
         }
     }
 
-    if (url.pathname == APIEndpoints.GET && request.method === 'GET') {
+    if (url.pathname == APIEndpoints.GET_USER && request.method === 'POST') {
         try {
             if (!body) {
                 return new Response("Missing request body", { status: 400 });
             }
             const user: User = JSON.parse(body);
-            await getUser(user);
-            return new Response("Found user")
+            const found = await getUser(user);
+            if (found) {
+                // Return user data as JSON
+                return new Response(JSON.stringify(found), {
+                    status: 200,
+                    headers: { "Content-Type": "application/json" },
+                });
+            } else {
+                return new Response("Invalid username or password.", { status: 404 });
+            }
         } catch (err) {
             console.error("Error finding user: ", err);
-            return new Response("Error registering user", { status: 500 });
+            return new Response("Invalid username or password.", { status: 404 });
         }
     }
 
@@ -79,7 +88,10 @@ async function newUser(user: User) {
     try {
         const users = client.db(Bun.env.DB_NAME).collection(USER_DB);
         await client.connect();
-        const result = await users.insertOne({ username: user.username, password: user.password, email: user.email, theme: user.theme });
+        // Hash the password before storing
+        if (!user.password) throw "Password is required for registration.";
+        const hashedPassword = await bcrypt.hash(user.password, 10);
+        const result = await users.insertOne({ username: user.username, password: hashedPassword, email: user.email, theme: user.theme });
         console.log(`New user created with the following id: ${result.insertedId}`);
     }
     catch (err) {
@@ -93,17 +105,29 @@ async function getUser(user: User) {
     const uri = Bun.env.CONNECTION_STRING || "";
     const client = new MongoClient(uri);
     try {
-        const users = client.db(Bun.env.DB_NAME).collection(USER_DB)
         await client.connect();
-        const result = await users.findOne({ username: user.username, password: user.password});
-        
-        if (!result) throw `No user found for the following id: ${user.username}`;
-         
-        console.log(`Returned user with the following id: ${result.insertedId}`);
+        const users = client.db(Bun.env.DB_NAME).collection(USER_DB);
+        // Find user by username only
+        const result = await users.findOne({ username: user.username });
+        if (!result) {
+            return null;
+        }
+        if (!user.password) throw "Password is required for login.";
+        // Compare password hash
+        const passwordMatch = await bcrypt.compare(user.password, result.password);
+        if (!passwordMatch) {
+            return null;
+        }
+        // Remove password from returned user object
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { password, ...userData } = result;
+        return userData as unknown as User;
     } catch (err) {
-        console.log(err);
+        console.error(err);
+        return null;
+    } finally {
+        await client.close();
     }
-
 }
 
 async function updateUser(user: User) {

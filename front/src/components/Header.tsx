@@ -1,4 +1,5 @@
 import type { ComponentProps } from "react";
+import { useUser } from "@front/components/UserContext";
 import { NavLink } from "@front/components/NavLink";
 import { NavLink as RouterLink, useNavigate } from "react-router";
 import { Button } from "./Button";
@@ -20,6 +21,8 @@ export function Header({
   noLinks = false,
   ...props
 }: HeaderProps) {
+  const user = useUser().user;
+  const setUser = useUser().setUser;
   const navLinks: navLink[] = [];
   const navigate = useNavigate();
   return (
@@ -56,7 +59,7 @@ export function Header({
               )}
               {mode === "authenticated" && (
                 <Menu
-                  title={"username"}
+                  title={user?.username || "User"}
                   items={[
                     {
                       type: "button",
@@ -72,7 +75,8 @@ export function Header({
                       type: "button",
                       label: "Logout",
                       onClick: () => {
-                        /* TODO: Add logout logic */
+                        setUser(null);
+                        navigate("/login");
                       },
                       className:
                         "block w-full px-4 py-2 text-left text-red-600 hover:bg-red-50 focus:bg-red-100 focus:outline-none font-medium",

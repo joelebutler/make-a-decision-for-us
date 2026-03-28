@@ -27,5 +27,8 @@
     "start": "bun run --cwd back start",
     "go": "bun run build && bun run start",
     "lint": "eslint . --ext .ts --fix"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3"
   }
 }

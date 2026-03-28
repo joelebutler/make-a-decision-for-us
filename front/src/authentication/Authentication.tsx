@@ -3,10 +3,11 @@ import { Card } from "@front/components/Card";
 import { Header } from "@front/components/Header";
 import { Main, PageLayout } from "@front/components/PageLayout";
 import { Section } from "@front/components/Section";
-import { useState } from "react";
-import { useLocation } from "react-router";
 
-import { useRef } from "react";
+import { useState, useRef } from "react";
+import { useLocation, useNavigate } from "react-router";
+import { useUser } from "@front/components/UserContext";
+import { APIEndpoints } from "@shared/shared-types";
 
 type FormState = {
   username: string;
@@ -31,6 +32,8 @@ function Authentication() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<Message | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
+  const navigate = useNavigate();
+  const { setUser } = useUser();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -40,10 +43,10 @@ function Authentication() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setMessage(null);
+    setLoading(true);
     if (mode === "register") {
-      setLoading(true);
       try {
-        const res = await fetch("/api/register", {
+        const res = await fetch(APIEndpoints.REGISTER, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -62,12 +65,10 @@ function Authentication() {
           formRef.current?.reset();
         } else {
           const text = await res.text();
-          setMessage(
-            (text && { type: "success", text: text }) || {
-              type: "error",
-              text: "Registration failed.",
-            },
-          );
+          setMessage({
+            type: "error",
+            text: text || "Registration failed.",
+          });
         }
       } catch (err) {
         console.error("Registration error:", err);
@@ -76,10 +77,44 @@ function Authentication() {
         setLoading(false);
       }
     } else {
-      // TODO: Implement login logic
-      // setMessage("Login not implemented yet.");
+      // Login logic
+      try {
+        const res = await fetch(APIEndpoints.GET_USER, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            username: form.username,
+            password: form.password,
+          }),
+        });
+        if (res.ok) {
+          // Expecting JSON user data
+          const user = await res.json();
+          if (user && user.username) {
+            setMessage({ type: "success", text: "Login successful!" });
+            setUser(user);
+            navigate("/dashboard");
+          } else {
+            setMessage({
+              type: "error",
+              text: "Login failed. Invalid user data.",
+            });
+          }
+        } else {
+          const text = await res.text();
+          setMessage({ type: "error", text: text || "Login failed." });
+        }
+      } catch (err) {
+        console.error("Login error:", err);
+        setMessage({ type: "error", text: "Network error. Please try again." });
+      } finally {
+        setLoading(false);
+      }
     }
   };
+
+  // ...existing code...
+  // (Removed duplicate component code at the end of the file)
 
   return (
     <PageLayout>

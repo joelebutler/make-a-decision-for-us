@@ -8,33 +8,36 @@ import Dashboard from "@front/authenticated/Dashboard";
 import AuthenticatedContent from "@front/components/AuthenticatedContent";
 import Settings from "./authentication/Settings";
 import ThemeInitializer from "@front/components/ThemeSwitcher";
+import { UserProvider } from "@front/components/UserContext";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <ThemeInitializer />
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Authentication />} />
-        <Route path="/register" element={<Authentication />} />
-        <Route
-          path="/dashboard"
-          element={
-            <AuthenticatedContent>
-              <Dashboard />
-            </AuthenticatedContent>
-          }
-        />
-        <Route
-          path="/settings"
-          element={
-            <AuthenticatedContent>
-              <Settings />
-            </AuthenticatedContent>
-          }
-        />
-        <Route path="*" element={<h1>Page not found.</h1>} />
-      </Routes>
-    </BrowserRouter>
+    <UserProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Authentication />} />
+          <Route path="/register" element={<Authentication />} />
+          <Route
+            path="/dashboard"
+            element={
+              <AuthenticatedContent>
+                <Dashboard />
+              </AuthenticatedContent>
+            }
+          />
+          <Route
+            path="/settings"
+            element={
+              <AuthenticatedContent>
+                <Settings />
+              </AuthenticatedContent>
+            }
+          />
+          <Route path="*" element={<h1>Page not found.</h1>} />
+        </Routes>
+      </BrowserRouter>
+    </UserProvider>
   </StrictMode>,
 );
