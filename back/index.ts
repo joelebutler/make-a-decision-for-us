@@ -33,12 +33,19 @@ async function Route(request: Request, url: URL): Promise<Response> {
             if (!body) {
                 return new Response("Missing request body", { status: 400 });
             }
+            console.log("Registering user with body:", body);
             const user: User = JSON.parse(body);
             await newUser(user);
-            return new Response("");
+            return new Response("Successfully registered user", { status: 201 });
         } catch (err) {
             console.error("Error registering user:", err);
-            return new Response("Error registering user", { status: 500 });
+            if (typeof err === "string" && err.includes("already exists")) {
+                return new Response(err, { status: 409 });
+            }
+            if (err instanceof Error && err.message.includes("already exists")) {
+                return new Response(err.message, { status: 409 });
+            }
+            return new Response((err instanceof Error ? err.message : "Error registering user"), { status: 500 });
         }
     }
 
@@ -84,18 +91,26 @@ async function Route(request: Request, url: URL): Promise<Response> {
 
 async function newUser(user: User) {
     const uri = Bun.env.CONNECTION_STRING || "";
+    console.log(uri)
     const client = new MongoClient(uri);
     try {
         const users = client.db(Bun.env.DB_NAME).collection(USER_DB);
         await client.connect();
-        // Hash the password before storing
-        if (!user.password) throw "Password is required for registration.";
-        const hashedPassword = await bcrypt.hash(user.password, Bun.env.HASH_SALT_ROUNDS ? parseInt(Bun.env.HASH_SALT_ROUNDS) : 10);
+        console.log("Connected to MongoDB, checking for existing user...");
+        const existingUser = await users.findOne({ username: user.username });
+        if (existingUser) {
+            throw new Error(`Username is taken.`);
+        }
+        console.log("No existing user found, hashing password...");
+        if (!user.password) throw new Error("Password is required for registration.");
+        const hashedPassword = await bcrypt.hash(user.password, 12);
+        console.log("Password hashed, inserting new user...");
         const result = await users.insertOne({ username: user.username, password: hashedPassword, email: user.email, theme: user.theme });
         console.log(`New user created with the following id: ${result.insertedId}`);
     }
     catch (err) {
         console.error("Error with MongoDB:", err);
+        throw err;
     } finally {
         await client.close();
     }

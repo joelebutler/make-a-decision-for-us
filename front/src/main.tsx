@@ -7,7 +7,7 @@ import Authentication from "@front/authentication/Authentication";
 import Dashboard from "@front/authenticated/Dashboard";
 import AuthenticatedContent from "@front/components/AuthenticatedContent";
 import Settings from "./authentication/Settings";
-import ThemeInitializer from "@front/components/ThemeSwitcher";
+import ThemeInitializer from "@front/components/ThemeInitializer";
 import { UserProvider } from "@front/components/UserContext";
 
 createRoot(document.getElementById("root")!).render(
