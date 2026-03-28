@@ -1,3 +1,10 @@
+export type Theme = "default" | "dark" | "sunset";
+export const Themes: Theme[] = ["default", "dark", "sunset"];
+
+export function applyTheme(theme: string) {
+  document.documentElement.setAttribute("data-theme", theme);
+  localStorage.setItem("theme", theme);
+}
 export type Theme = "default" | "dark" | "sunset" | "peach" | "twilightsparkle" | 
 "DIO" | "teal" | "koi" | "gamer" | "sky" | "dusk" | "cherry" | "sophia" | "sunshine" | "brat" 
 | "pie" | "joel" | "sophia" | "mark" | "lilly" | "HEY";

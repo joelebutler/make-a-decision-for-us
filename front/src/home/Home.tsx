@@ -7,7 +7,7 @@ import { Section } from "@front/components/Section";
 function Home() {
   return (
     <PageLayout>
-      <Header />
+      <Header mode="homepage" />
       <Main>
         <Section>
           <div className="container mx-auto px-4 text-center">
