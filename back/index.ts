@@ -90,7 +90,7 @@ async function newUser(user: User) {
         await client.connect();
         // Hash the password before storing
         if (!user.password) throw "Password is required for registration.";
-        const hashedPassword = await bcrypt.hash(user.password, 10);
+        const hashedPassword = await bcrypt.hash(user.password, Bun.env.HASH_SALT_ROUNDS ? parseInt(Bun.env.HASH_SALT_ROUNDS) : 10);
         const result = await users.insertOne({ username: user.username, password: hashedPassword, email: user.email, theme: user.theme });
         console.log(`New user created with the following id: ${result.insertedId}`);
     }

@@ -7,7 +7,7 @@ function AuthenticatedContent({ children }: { children: React.ReactNode }) {
   const user = useUser().user;
   useEffect(() => {
     if (!user) {
-      window.location.href = "/login";
+      window.location.href = "/";
     }
   }, [user]);
   return (
