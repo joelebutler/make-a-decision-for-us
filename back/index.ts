@@ -71,17 +71,39 @@ async function Route(request: Request, url: URL): Promise<Response> {
         }
     }
 
-    if (url.pathname == APIEndpoints.UPDATE && request.method === 'PATCH') {
+    if (url.pathname == APIEndpoints.CHANGE_THEME && request.method === 'PATCH') {
         try {
             if (!body) {
                 return new Response("Missing request body", { status: 400 });
             }
             const user: User = JSON.parse(body);
-            await updateUser(user);
+            await updateTheme(user);
             return new Response("Updated theme")
         } catch (err) {
             console.error("Error updating theme: ", err);
             return new Response("Error updating theme", { status: 500 });
+        }
+    }
+
+    if (url.pathname == APIEndpoints.GET_THEME && request.method === 'GET') {
+        try {
+            const username = url.searchParams.get("username");
+            if (!username) {
+                return new Response("Missing username query parameter", { status: 400 });
+            }
+            const user: User = { username }; // Email is not needed for theme retrieval
+            const found = await getUser(user);
+            if (found) {
+                return new Response(JSON.stringify({ theme: found.theme }), {
+                    status: 200,
+                    headers: { "Content-Type": "application/json" },
+                });
+            } else {
+                return new Response("User not found.", { status: 404 });
+            }
+        } catch (err) {
+            console.error("Error retrieving theme: ", err);
+            return new Response("Error retrieving theme", { status: 500 });
         }
     }
     
@@ -105,7 +127,7 @@ async function newUser(user: User) {
         if (!user.password) throw new Error("Password is required for registration.");
         const hashedPassword = await bcrypt.hash(user.password, 12);
         console.log("Password hashed, inserting new user...");
-        const result = await users.insertOne({ username: user.username, password: hashedPassword, email: user.email, theme: user.theme });
+        const result = await users.insertOne({ username: user.username, password: hashedPassword, email: user.email, theme: user.theme || "default" });
         console.log(`New user created with the following id: ${result.insertedId}`);
     }
     catch (err) {
@@ -145,13 +167,13 @@ async function getUser(user: User) {
     }
 }
 
-async function updateUser(user: User) {
+async function updateTheme(user: User) {
     const uri = Bun.env.CONNECTION_STRING || "";
     const client = new MongoClient(uri);
     try {
         const users = client.db(Bun.env.DB_NAME).collection(USER_DB)
         await client.connect();
-        const result = await users.updateOne({username: user.username}, { theme: user.theme });
+        const result = await users.updateOne({ username: user.username }, { $set: { theme: user.theme } });
         
         if (!result) throw `No user found for the following id: ${user.username}`;
         

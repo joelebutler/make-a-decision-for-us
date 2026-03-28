@@ -1,6 +1,6 @@
 export type User = {
     username: string;
-    email: string;
+    email?: string;
     password?: string;
     theme?: string;
 }
@@ -8,5 +8,6 @@ export type User = {
 export enum APIEndpoints {
     REGISTER = "/api/register",
     GET_USER = "/api/get-user",
-    UPDATE = "/api/update"
+    CHANGE_THEME = "/api/theme/change",
+    GET_THEME = "/api/theme/get"
 }

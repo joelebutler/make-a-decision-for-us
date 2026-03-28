@@ -4,9 +4,10 @@ import { Header } from "@front/components/Header";
 import { Main, PageLayout } from "@front/components/PageLayout";
 import { Section } from "@front/components/Section";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router";
 import { useUser } from "@front/components/UserContext";
+import { applyTheme } from "@front/components/types";
 import { APIEndpoints } from "@shared/shared-types";
 
 type FormState = {
@@ -33,7 +34,7 @@ function Authentication() {
   const [message, setMessage] = useState<Message | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
   const navigate = useNavigate();
-  const { setUser } = useUser();
+  const { user, setUser } = useUser();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -93,6 +94,7 @@ function Authentication() {
           if (user && user.username) {
             setMessage({ type: "success", text: "Login successful!" });
             setUser(user);
+            if (user.theme) applyTheme(user.theme);
             navigate("/dashboard");
           } else {
             setMessage({
@@ -112,10 +114,12 @@ function Authentication() {
       }
     }
   };
-
-  // ...existing code...
-  // (Removed duplicate component code at the end of the file)
-
+  useEffect(() => {
+    // Redirect to dashboard if already logged in
+    if (user) {
+      navigate("/dashboard");
+    }
+  }, []);
   return (
     <PageLayout>
       <Header mode={"login"} noLinks={true} />
