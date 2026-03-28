@@ -1,0 +1,5 @@
+@import "@front/index.css";
+
+.button {
+  @apply bg-surface text-text text-sm px-2 py-1 border-2 border-brand rounded-lg text-nowrap hover:cursor-pointer;
+}

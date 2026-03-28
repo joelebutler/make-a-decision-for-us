@@ -1,1 +1,55 @@
 @import "tailwindcss";
+
+@theme {
+  --color-brand: var(--brand);
+  --color-surface: var(--surface);
+  --color-text: var(--text);
+}
+
+:root {
+  --brand: oklch(70% 0.19 264);
+  --surface: oklch(98% 0.01 230);
+  --text: oklch(32% 0.05 264);
+}
+
+@supports not (color: oklch(70% 0.19 264)) {
+  :root {
+    --brand: #3b82f6;
+    --surface: #f0f9ff;
+    --text: #0c4a6e;
+  }
+}
+
+[data-theme="dark"] {
+  --brand: oklch(80% 0.15 264);
+  --surface: oklch(32% 0.05 264);
+  --text: oklch(95% 0.01 230);
+}
+
+@supports not (color: oklch(80% 0.15 264)) {
+  [data-theme="dark"] {
+    --brand: #60a5fa;
+    --surface: #0c4a6e;
+    --text: #e0f2fe;
+  }
+}
+
+[data-theme="sunset"] {
+  --brand: oklch(80% 0.22 40);
+  --surface: oklch(98% 0.01 70);
+  --text: oklch(32% 0.09 40);
+}
+
+@supports not (color: oklch(80% 0.22 40)) {
+  [data-theme="sunset"] {
+    --brand: #f97316;
+    --surface: #fff7ed;
+    --text: #7c2d12;
+  }
+}
+
+@layer base {
+  body {
+    @apply bg-surface text-text;
+  }
+}

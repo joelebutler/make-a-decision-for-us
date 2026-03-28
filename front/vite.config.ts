@@ -7,7 +7,7 @@ import path from 'node:path'
 export default defineConfig({
   resolve: {
     alias: {
-      '@': '/src',
+      '@front': path.resolve(__dirname, './src'),
       '@shared': path.resolve(__dirname, '../shared')
     }
   },
