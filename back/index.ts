@@ -33,14 +33,30 @@ async function Route(request: Request, url: URL): Promise<Response> {
                 return new Response("Missing request body", { status: 400 });
             }
             const user: User = JSON.parse(body);
-            await newUser(user);
-            return new Response("User registered successfully");
+            await getUser(user);
+            return new Response("");
         } catch (err) {
             console.error("Error registering user:", err);
             return new Response("Error registering user", { status: 500 });
         }
     }
+
+    if (url.pathname == APIEndpoints.GET && request.method === 'GET') {
+        try {
+            if (!body) {
+                return new Response("Missing request body", { status: 400 });
+            }
+            const user: User = JSON.parse(body);
+            await newUser(user);
+            return new Response("Found user")
+        } catch (err) {
+            console.error("Error finding user: ", err);
+            return new Response("Error registering user", { status: 500 });
+        }
+    }
+    
     return new Response("Not Found", { status: 404 });
+
 }
 
 async function newUser(user: User) {
@@ -49,7 +65,7 @@ async function newUser(user: User) {
     try {
         const users = client.db(Bun.env.DB_NAME).collection(USER_DB);
         await client.connect();
-        const result = await users.insertOne({ username: user.username, password: user.password, email: user.email });
+        const result = await users.insertOne({ username: user.username, password: user.password, email: user.email, theme: user.theme });
         console.log(`New user created with the following id: ${result.insertedId}`);
     }
     catch (err) {
@@ -57,4 +73,21 @@ async function newUser(user: User) {
     } finally {
         await client.close();
     }
+}
+
+async function getUser(user: User) {
+    const uri = Bun.env.CONNECTION_STRING || "";
+    const client = new MongoClient(uri);
+    try {
+        const users = client.db(Bun.env.DB_NAME).collection(USER_DB)
+        await client.connect();
+        const result = await users.findOne({ username: user.username, password: user.password});
+        
+        if (!result) throw `No user found for the following id: ${user.username}`;
+         
+        console.log(`Returned user with the following id: ${result.insertedId}`);
+    } catch (err) {
+        console.log(err);
+    }
+
 }
