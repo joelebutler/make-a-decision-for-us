@@ -1,3 +1,5 @@
+const { MongoClient } = require('mongodb');
+
 Bun.serve({
     port: Bun.env.PORT,
     async fetch(req) {
@@ -28,3 +30,22 @@ async function Route(url: URL): Promise<Response> {
     }
     return new Response("Hello from the backend!");
 }
+
+// mongodb connection
+async function runGetStarted() {
+  const uri = Bun.env.CONNECTION_STRING;
+  const client = new MongoClient(uri);
+
+  try {
+    const database = client.db('sample_mflix');
+    const movies = database.collection('movies');
+
+    // Queries for a movie that has a title value of 'Back to the Future'
+    const query = { title: 'Back to the Future' };
+    const movie = await movies.findOne(query);
+    console.log(movie);
+  } finally {
+    await client.close();
+  }
+}
+runGetStarted().catch(console.dir);
