@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router";
+import { useParams, useSearchParams } from "react-router";
+import * as Ariakit from "@ariakit/react";
 import { API, type Room, type DRequest } from "@shared/shared-types";
 import { Card } from "../components/Card";
 import { Button } from "../components/Button";
@@ -32,11 +33,18 @@ const getUserColor = (username: string) => {
 
 function RoomPage() {
   const { id } = useParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { user } = useUser();
   const [room, setRoom] = useState<Room | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [requests, setRequests] = useState<DRequest[]>([]);
+
+  const [showPasswordDialog, setShowPasswordDialog] = useState(false);
+  const [roomPassword, setRoomPassword] = useState(
+    searchParams.get("password") || "",
+  );
+  const [passwordError, setPasswordError] = useState<string | null>(null);
 
   const [title, setTitle] = useState("");
   const [details, setDetails] = useState("");
@@ -119,11 +127,28 @@ function RoomPage() {
         if (data.requests) setRequests(data.requests);
 
         if (user && data && !data.members.includes(user.username)) {
-          await fetch(API.BASE + API.ROOM_BASE + "/" + id + API.ADD_TO_ROOM, {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ username: user.username }),
-          });
+          // If room is locked and no password in URL, immediately show dialog
+          // or we can just try sending the password we have, and let it 401
+          const patchRes = await fetch(
+            API.BASE + API.ROOM_BASE + "/" + id + API.ADD_TO_ROOM,
+            {
+              method: "PATCH",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                username: user.username,
+                password: roomPassword,
+              }),
+            },
+          );
+
+          if (!patchRes.ok) {
+            if (patchRes.status === 401 && data.isLocked) {
+              setLoading(false);
+              setShowPasswordDialog(true);
+              return;
+            }
+            throw new Error(await patchRes.text());
+          }
         }
       } catch (err: unknown) {
         if (err instanceof Error) {
@@ -136,7 +161,44 @@ function RoomPage() {
       }
     }
     if (id) fetchRoomAndJoin();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, user]);
+
+  const handlePasswordSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!roomPassword || !user) return;
+
+    setPasswordError(null);
+    try {
+      const res = await fetch(
+        API.BASE + API.ROOM_BASE + "/" + id + API.ADD_TO_ROOM,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            username: user.username,
+            password: roomPassword,
+          }),
+        },
+      );
+
+      if (!res.ok) {
+        setPasswordError((await res.text()) || "Invalid password");
+        return;
+      }
+
+      setSearchParams({ password: roomPassword });
+      setShowPasswordDialog(false);
+      const roomRes = await fetch(API.BASE + API.ROOM_BASE + "/" + id);
+      if (roomRes.ok) {
+        const data = await roomRes.json();
+        setRoom(data);
+        if (data.requests) setRequests(data.requests);
+      }
+    } catch (err) {
+      if (err instanceof Error) setPasswordError(err.message);
+    }
+  };
 
   const fetchMessages = async () => {
     try {
@@ -315,6 +377,91 @@ function RoomPage() {
         </Card>
       </div>
     );
+
+  if (showPasswordDialog) {
+    return (
+      <div className="flex-1 flex items-center justify-center w-full py-20 px-4">
+        <Card className="p-8 shadow-sm max-w-md w-full border border-surface-elevated">
+          <Ariakit.DialogHeading className="text-2xl font-black mb-2 tracking-tight flex items-center gap-3">
+            <div className="p-2 bg-brand/10 text-brand rounded-xl">
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2.5}
+                  d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                />
+              </svg>
+            </div>
+            Room Password
+          </Ariakit.DialogHeading>
+          <p className="text-text-muted font-medium mb-6 leading-relaxed">
+            This room is locked. Please enter the password to proceed.
+          </p>
+
+          <form onSubmit={handlePasswordSubmit} className="flex flex-col gap-4">
+            <div className="flex flex-col gap-2 relative">
+              <label htmlFor="room-password" className="sr-only">
+                Password
+              </label>
+              <input
+                id="room-password"
+                type="password"
+                value={roomPassword}
+                onChange={(e) => setRoomPassword(e.target.value)}
+                placeholder="Enter password..."
+                className="w-full px-4 py-3 rounded-xl border-2 border-brand/10 bg-surface/80 text-text font-medium shadow-sm focus:outline-none focus:border-brand/40 focus:ring-4 focus:ring-brand/10 transition-all duration-200"
+              />
+              {passwordError && (
+                <div className="text-red-500 text-sm font-bold flex items-center gap-1.5 mt-1 animate-fade-in px-1">
+                  <svg
+                    className="w-4 h-4 shrink-0"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2.5}
+                      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                    />
+                  </svg>
+                  {passwordError}
+                </div>
+              )}
+            </div>
+            <div className="flex gap-3 justify-end mt-2">
+              <Ariakit.Button
+                type="submit"
+                className="flex-1 py-3 bg-brand hover:bg-brand-hover text-surface font-black rounded-xl transition-all duration-200 shadow-sm border border-transparent focus:outline-none focus:ring-4 focus:ring-brand/20 flex items-center justify-center gap-2 group"
+              >
+                Join Room
+                <svg
+                  className="w-4 h-4 group-hover:translate-x-1 transition-transform"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2.5}
+                    d="M14 5l7 7m0 0l-7 7m7-7H3"
+                  />
+                </svg>
+              </Ariakit.Button>
+            </div>
+          </form>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full flex-1 flex flex-col py-8 px-4 md:px-8 relative min-h-0">

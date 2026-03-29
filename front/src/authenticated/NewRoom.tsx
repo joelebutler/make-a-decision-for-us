@@ -4,8 +4,6 @@ import { Section } from "@front/components/Section";
 import { useState } from "react";
 import { useUser } from "@front/components/UserContext";
 import { Switch } from "@front/components/Switch";
-import { Tooltip } from "@front/components/Tooltip";
-import { FiInfo } from "react-icons/fi";
 import { API, type Message } from "@shared/shared-types";
 
 import type { User, Room } from "@shared/shared-types";

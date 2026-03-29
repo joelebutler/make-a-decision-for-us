@@ -1,4 +1,4 @@
-import type { Factor, ResponseFactor } from "@shared/shared-types";
+import type { ResponseFactor } from "@shared/shared-types";
 
 export const USER_DB: string = "users";
 export const ROOM_DB: string = "rooms";

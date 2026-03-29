@@ -24,6 +24,7 @@ export type Room = {
   roomID: string;
   members: string[]; // List of usernames
   password?: string;
+  isLocked?: boolean;
   requests?: DRequest[];
 };
 
