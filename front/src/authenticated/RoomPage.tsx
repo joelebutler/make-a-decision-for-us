@@ -50,7 +50,7 @@ function RoomPage() {
   const handleCallGemini = async () => {
     if (requests.length < 3) {
       setDecisionError(
-        "Please add at least 3 factors to give Gemini enough context to decide.",
+        "Please add at least 3 factors to start the decision making process.",
       );
       return;
     }
@@ -475,7 +475,7 @@ function RoomPage() {
                 ></path>
               </svg>
               <h2 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-brand to-brand-hover mb-3">
-                Consulting Gemini...
+                Working on your options...
               </h2>
               <p className="text-text-muted font-bold text-xl text-center max-w-sm">
                 Crunching the factors to find the absolute best option.
@@ -817,7 +817,7 @@ function RoomPage() {
                           />
                         </svg>
                         Need {3 - requests.length} more factor
-                        {3 - requests.length === 1 ? "" : "s"} to consult Gemini
+                        {3 - requests.length === 1 ? "" : "s"} to start the decision making process.
                       </div>
                     )}
 

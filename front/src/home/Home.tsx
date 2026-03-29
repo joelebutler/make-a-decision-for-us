@@ -29,9 +29,7 @@ function Home() {
               <span className="text-brand">Made Easy</span>
             </h1>
             <p className="text-xl md:text-2xl text-text-muted max-w-2xl mx-auto leading-relaxed font-light">
-              Say goodbye to endless debates and hello to happy choices! The
-              perfect place for you and your friends to agree on... well,
-              anything!
+              Kimaru (決まる) means "to decide" in Japanese. Let us help you make complex/difficult, multi-factored decisions using AI powered tools. Kimaru will weigh each factor and find several options to review. Start making decisions together or solo.
             </p>
             <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4">
               <RouterLink to="/register">
@@ -154,7 +152,7 @@ function Home() {
 
               <div className="relative z-10 max-w-3xl mx-auto space-y-8">
                 <h2 className="text-4xl md:text-6xl font-black tracking-tight leading-tight">
-                  Ready to have some fun?
+                  Ready to get started?
                 </h2>
                 <p className="text-xl text-surface/90 max-w-2xl mx-auto font-medium leading-relaxed">
                   Start your first poll now and bring a little more harmony to
