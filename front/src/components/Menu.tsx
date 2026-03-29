@@ -24,7 +24,7 @@ interface MenuProps {
 function Menu({ title, items }: MenuProps) {
   return (
     <MenuProvider>
-      <MenuButton className="pl-2.5 pr-4 py-1.5 text-sm font-bold shadow-sm hover:bg-surface-elevated transition-all duration-300 rounded-xl border-2 border-brand/20 text-brand bg-transparent flex items-center gap-2.5 outline-none h-[40px]">
+      <MenuButton className="hover:cursor-pointer pl-2.5 pr-4 py-1.5 text-sm font-bold shadow-sm hover:bg-surface-elevated transition-all duration-300 rounded-xl border-2 border-brand/20 text-brand bg-transparent flex items-center gap-2.5 outline-none h-[40px]">
         <div className="w-6 h-6 rounded-full bg-gradient-to-br from-brand to-brand-hover text-surface shadow-sm flex items-center justify-center text-xs font-black">
           {title.charAt(0).toUpperCase()}
         </div>

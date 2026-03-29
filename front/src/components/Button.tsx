@@ -3,7 +3,10 @@ import type { ButtonProps as AriaButtonProps } from "@ariakit/react";
 
 export const Button: React.FC<AriaButtonProps> = ({ children, ...props }) => {
   return (
-    <AriaButton {...props} className={`${props.className}`}>
+    <AriaButton
+      {...props}
+      className={`${props.className} hover:cursor-pointer`}
+    >
       {children}
     </AriaButton>
   );

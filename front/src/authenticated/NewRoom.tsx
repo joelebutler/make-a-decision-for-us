@@ -101,7 +101,7 @@ function NewRoom() {
             </span>
           </h1>
           <p className="text-lg text-text-muted font-medium max-w-md mx-auto">
-            Set up the perfect space for your group's next big decision.
+            Make the hard decision.
           </p>
         </div>
 
@@ -123,7 +123,7 @@ function NewRoom() {
               <input
                 type="text"
                 name="name"
-                placeholder="e.g. Where should we eat tonight?"
+                placeholder="e.g. Where should grandma go?"
                 className="w-full bg-surface-muted/50 border-2 border-brand/10 hover:border-brand/30 rounded-xl px-4 py-3.5 focus:outline-none focus:ring-4 focus:ring-brand/20 focus:border-brand transition-all duration-300 text-lg font-semibold placeholder:font-normal placeholder:text-text-muted/50 shadow-sm"
                 required
                 value={form.name}

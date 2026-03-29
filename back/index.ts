@@ -21,8 +21,11 @@ import {
 
 const ai = new GoogleGenAI({});
 
+const PORT = process.env.PORT || 8000;
+console.log(`Starting server on port ${PORT}...`);
+
 Bun.serve({
-  port: Bun.env.PORT,
+  port: PORT,
   async fetch(req) {
     console.log("Received request:", req.method, req.url);
     const url = new URL(req.url);

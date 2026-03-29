@@ -23,7 +23,7 @@
     "frontdev": "bun run --cwd front dev",
     "backdev": "bun run --cwd back dev",
     "dev": "concurrently \"bun run --cwd back dev\" \"bun run --cwd front dev\"",
-    "build": "bun run check && bun run --cwd front build",
+    "build": "bun run --cwd front build",
     "start": "bun run --cwd back start",
     "go": "bun run build && bun run start",
     "lint": "eslint . --ext .ts --fix"

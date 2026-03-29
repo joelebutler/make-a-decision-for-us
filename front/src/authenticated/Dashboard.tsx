@@ -214,7 +214,7 @@ const Dashboard = () => {
                             e.preventDefault();
                             if (!user) return;
                             const res = await fetch(
-                              API.BASE + API.ROOM_BASE + lobby.id,
+                              API.BASE + API.ROOM_BASE + "/" + lobby.id,
                               { method: "DELETE" },
                             );
                             if (res.ok) {
@@ -309,6 +309,7 @@ const Dashboard = () => {
                             await fetch(
                               API.BASE +
                                 API.ROOM_BASE +
+                                "/" +
                                 lobby.id +
                                 API.ROOM_LEAVE,
                               {
