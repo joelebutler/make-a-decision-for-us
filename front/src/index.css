@@ -140,9 +140,9 @@
 
 @supports not (color: oklch(79.602% 0.10059 299.836)) {
   [data-theme="sky"] {
-  --brand: #0c3e7e;
-  --surface: #ffffff;
-  --text: #1092cf;
+    --brand: #0c3e7e;
+    --surface: #ffffff;
+    --text: #1092cf;
   }
 }
 
@@ -154,9 +154,9 @@
 
 @supports not (color: oklch(79.602% 0.10059 299.836)) {
   [data-theme="dusk"] {
-  --brand: #ffffff;
-  --surface: #432b5d;
-  --text: #da825f;
+    --brand: #ffffff;
+    --surface: #432b5d;
+    --text: #da825f;
   }
 }
 
@@ -168,9 +168,9 @@
 
 @supports not (color: oklch(79.602% 0.10059 299.836)) {
   [data-theme="cherry"] {
-  --brand: #ff8383;
-  --surface: #ffffff;
-  --text: #ffffff;
+    --brand: #ff8383;
+    --surface: #ffffff;
+    --text: #ffffff;
   }
 }
 
@@ -182,9 +182,9 @@
 
 @supports not (color: oklch(79.602% 0.10059 299.836)) {
   [data-theme="sophia"] {
- --brand: #790127;
-  --surface: #ef8a92;
-  --text: #720019;
+    --brand: #790127;
+    --surface: #ef8a92;
+    --text: #720019;
   }
 }
 
@@ -196,9 +196,9 @@
 
 @supports not (color: oklch(79.602% 0.10059 299.836)) {
   [data-theme="sunshine"] {
- --brand: #e7d95b;
-  --surface: #ffffff;
-  --text: #ee8b21;
+    --brand: #e7d95b;
+    --surface: #ffffff;
+    --text: #ee8b21;
   }
 }
 
@@ -210,9 +210,9 @@
 
 @supports not (color: oklch(79.602% 0.10059 299.836)) {
   [data-theme="brat"] {
- --brand: #000000;
-  --surface: #72cf01;
-  --text: #000000;
+    --brand: #000000;
+    --surface: #72cf01;
+    --text: #000000;
   }
 }
 
@@ -224,23 +224,23 @@
 
 @supports not (color: oklch(79.602% 0.10059 299.836)) {
   [data-theme="pie"] {
- --brand: #f5f366;
-  --surface: #ff7dba;
-  --text: #88d5ff;
+    --brand: #f5f366;
+    --surface: #ff7dba;
+    --text: #88d5ff;
   }
 }
 
 [data-theme="joel"] {
-  --brand: oklch(29.173% 0.06339 119.77);
-  --surface: oklch(50.141% 0.09621 118.858);
-  --text: oklch(100% 0.00011 271.152);
+  --brand: oklch(41.186% 0.1359 143.452);
+  --surface: #fff8e7;
+  --text: #111111;
 }
 
 @supports not (color: oklch(79.602% 0.10059 299.836)) {
   [data-theme="joel"] {
-  --brand: #283005;
-  --surface: #5e6b24;
-  --text: #ffffff;
+    --brand: #283005;
+    --surface: #5e6b24;
+    --text: #ffffff;
   }
 }
 
@@ -252,9 +252,9 @@
 
 @supports not (color: oklch(79.602% 0.10059 299.836)) {
   [data-theme="mark"] {
-   --brand: #c24b05;
-  --surface: #f4b711;
-  --text: #c24b05;
+    --brand: #c24b05;
+    --surface: #f4b711;
+    --text: #c24b05;
   }
 }
 
@@ -266,9 +266,9 @@
 
 @supports not (color: oklch(79.602% 0.10059 299.836)) {
   [data-theme="lilly"] {
-   --brand: #ff0062;
-  --surface: #c59eff;
-  --text: #000000;
+    --brand: #ff0062;
+    --surface: #c59eff;
+    --text: #000000;
   }
 }
 
@@ -280,9 +280,9 @@
 
 @supports not (color: oklch(79.602% 0.10059 299.836)) {
   [data-theme="HEY"] {
-   --brand: #ff5050;
-  --surface: #d1ffed;
-  --text: #000000;
+    --brand: #ff5050;
+    --surface: #d1ffed;
+    --text: #000000;
   }
 }
 
@@ -291,5 +291,3 @@
     @apply bg-surface text-text;
   }
 }
-
-
