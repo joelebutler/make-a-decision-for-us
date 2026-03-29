@@ -11,6 +11,13 @@ import {
 } from "@shared/shared-types";
 import { signJwt, verifyJwt } from "./jwt";
 import { GenerateContentResponse, GoogleGenAI } from "@google/genai";
+import {
+  ADD_MESSAGE,
+  GET_MESSAGES,
+  REMOVE_MESSAGE,
+  ADD_VOTE,
+  REMOVE_VOTE,
+} from "./messages";
 
 const ai = new GoogleGenAI({});
 
@@ -84,19 +91,42 @@ async function Route(request: Request, url: URL): Promise<Response> {
       request.method === "PATCH"
     ) {
       return await ADD_TO_ROOM(url, body);
+    } else if (
+      workingPathname.endsWith(API.ADD_MESSAGE) &&
+      request.method === "POST"
+    ) {
+      return await ADD_MESSAGE(url, body);
+    } else if (
+      workingPathname.endsWith(API.GET_MESSAGES) &&
+      request.method === "GET"
+    ) {
+      return await GET_MESSAGES(url);
+    } else if (
+      workingPathname.endsWith(API.REMOVE_MESSAGE) &&
+      request.method === "DELETE"
+    ) {
+      return await REMOVE_MESSAGE(url, body);
+    } else if (
+      workingPathname.endsWith(API.ADD_VOTE) &&
+      request.method === "PATCH"
+    ) {
+      return await ADD_VOTE(url, body);
+    } else if (
+      workingPathname.endsWith(API.REMOVE_VOTE) &&
+      request.method === "DELETE"
+    ) {
+      return await REMOVE_VOTE(url, body);
+    } else if (
+      workingPathname === API.CREATE_ROOM &&
+      request.method === "POST"
+    ) {
+      return await CREATE_ROOM(body);
     } else if (request.method === "DELETE") {
-      DELETE_ROOM(url);
+      return await DELETE_ROOM(url);
     } else if (request.method === "GET") {
       const roomID = url.pathname.split("/").pop();
       console.log(roomID);
       return await getRoomById(roomID);
-    } else {
-      if (
-        url.pathname.startsWith(API.CREATE_ROOM) &&
-        request.method === "POST"
-      ) {
-        CREATE_ROOM(body);
-      }
     }
   }
 
@@ -128,7 +158,7 @@ async function Route(request: Request, url: URL): Promise<Response> {
   // gemini api
   //*********************************************
   if (workingPathname.startsWith(API.CALL_GEMINI) && request.method === "POST")
-    CALL_GEMINI(body);
+    return await CALL_GEMINI(body);
 
   return new Response("Not Found", { status: 404 });
 }
@@ -494,8 +524,11 @@ async function CALL_GEMINI(body: string | null): Promise<Response> {
       return new Response("Missing request body", { status: 400 });
     }
     const prompt: GeminiRequest = JSON.parse(body);
-    await callGemini(prompt);
-    return new Response("Received response from gemini", { status: 201 });
+    const geminiText = await callGemini(prompt);
+    return new Response(geminiText, {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
   } catch (err) {
     console.error("Error calling gemini ai:", err);
     return new Response(
@@ -844,7 +877,9 @@ async function callGemini(request: GeminiRequest) {
       contents: sendContents,
     });
     console.log(response.text);
+    return response.text;
   } catch (err) {
     console.log(err);
+    throw err;
   }
 }

@@ -23,6 +23,21 @@ export type Room = {
   roomID: string;
   members: string[]; // List of usernames
   password?: string;
+  requests?: DRequest[];
+};
+
+export type VotingRecord = {
+  username: string;
+  upvote: boolean; // false for downvote, true for upvote
+};
+
+export type DRequest = {
+  id: string; // generated ID for tracking and referencing
+  timeStamp: Date;
+  sentBy: string; // username
+  title: string;
+  details: string;
+  votingHistory: VotingRecord[];
 };
 
 export type Message = {
@@ -36,14 +51,14 @@ export type GeminiRequest = {
 };
 
 export type Factor = {
-  id: number;
+  id: string | number;
   title: string; // Price
   details: string; // "I want it to be under $5,000"
   user_weighting: number; // 2 votes up, or 1 vote net negative
 };
 
 export type ResponseFactor = {
-  factorId: number;
+  factorId: string | number;
   matchPercent: number;
 };
 
@@ -64,4 +79,9 @@ export enum API {
   ACCEPT_FRIEND = "/accept",
   GET_FRIENDS_LIST = "/get",
   REMOVE_FRIEND = "/remove",
+  ADD_MESSAGE = "/message/add",
+  GET_MESSAGES = "/message/get",
+  REMOVE_MESSAGE = "/message/remove",
+  ADD_VOTE = "/vote/add",
+  REMOVE_VOTE = "/vote/remove",
 }
