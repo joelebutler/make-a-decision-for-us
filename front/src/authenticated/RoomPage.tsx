@@ -4,6 +4,7 @@ import { API, type Room, type DRequest } from "@shared/shared-types";
 import { Card } from "../components/Card";
 import { Button } from "../components/Button";
 import { useUser } from "../components/UserContext";
+import Chart from "../components/Chart";
 
 const getUserColor = (username: string) => {
   const colors = [
@@ -528,32 +529,17 @@ function RoomPage() {
                       <div className="text-xs font-bold text-gray-800 dark:text-gray-400 uppercase tracking-widest mb-4">
                         Factor Match Analysis
                       </div>
-                      <div className="w-full flex-1 flex flex-col gap-4 overflow-y-auto pr-2 custom-scrollbar">
-                        {item.factors?.map((f: any, i: number) => {
-                          const originalFactor = requests.find(
-                            (r) => String(r.id) === String(f.factorId),
-                          );
-                          const title =
-                            originalFactor?.title || `Factor ${f.factorId}`;
-                          return (
-                            <div key={i} className="flex flex-col gap-1.5">
-                              <div className="flex justify-between text-xs font-bold text-gray-700 dark:text-gray-300">
-                                <span className="truncate pr-2">{title}</span>
-                                <span className="shrink-0">
-                                  {f.matchPercent}%
-                                </span>
-                              </div>
-                              <div className="w-full bg-gray-200 dark:bg-gray-700 h-2.5 rounded-full overflow-hidden">
-                                <div
-                                  className={`h-full rounded-full transition-all duration-1000 ${f.matchPercent >= 75 ? "bg-green-500" : f.matchPercent >= 40 ? "bg-amber-500" : "bg-red-500"}`}
-                                  style={{
-                                    width: `${Math.max(0, Math.min(100, f.matchPercent))}%`,
-                                  }}
-                                />
-                              </div>
-                            </div>
-                          );
-                        }) || (
+                      <div className="w-full flex-1 flex flex-col overflow-y-auto overflow-x-hidden custom-scrollbar items-center justify-center">
+                        {item.factors && item.factors.length > 0 ? (
+                          <Chart
+                            metrics={item.factors.map((f: any) => {
+                              const originalFactor = requests.find((r) => String(r.id) === String(f.factorId));
+                              return originalFactor?.title || `Factor ${f.factorId}`;
+                            })}
+                            data={item.factors.map((f: any) => f.matchPercent)}
+                            label={`Option ${index + 1} Match`}
+                          />
+                        ) : (
                           <div className="text-sm text-gray-400 text-center mt-8">
                             No factor data available
                           </div>

@@ -1,68 +1,34 @@
-import * as React from 'react';
-import Box from '@mui/material/Box';
-import Stack from '@mui/material/Stack';
-import { RadarChart, type RadarSeries } from '@mui/x-charts/RadarChart';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Checkbox from '@mui/material/Checkbox';
+import * as React from "react";
+import Box from "@mui/material/Box";
+import { RadarChart, type RadarSeries } from "@mui/x-charts/RadarChart";
 
-export default function DemoRadarVisualisation() {
-  const [hideMark, setHideMark] = React.useState(false);
-  const [fillArea, setFillArea] = React.useState(false);
+export interface ChartProps {
+  metrics: string[];
+  data: number[];
+  label: string;
+}
 
-  const withOptions = (series: RadarSeries[]) =>
-    series.map((item) => ({ ...item, hideMark, fillArea }));
+export default function Chart({ metrics, data, label }: ChartProps) {
+  const series: RadarSeries[] = [
+    {
+      label: label,
+      data: data,
+      hideMark: false,
+      fillArea: true,
+    },
+  ];
 
   return (
-    <Box sx={{ width: '100%' }}>
-      <Stack sx={{ width: '100%', mb: 2 }} direction="row" flexWrap="wrap" gap={2}>
-        <FormControlLabel
-          checked={!hideMark}
-          control={
-            <Checkbox onChange={(event) => setHideMark(!event.target.checked)} />
-          }
-          label="with mark"
-          labelPlacement="end"
-        />
-        <FormControlLabel
-          checked={fillArea}
-          control={
-            <Checkbox onChange={(event) => setFillArea(event.target.checked)} />
-          }
-          label="fill area"
-          labelPlacement="end"
-        />
-      </Stack>
-      <Stack
-        sx={{ width: '100%' }}
-        direction="row"
-        flexWrap="wrap"
-        justifyContent="space-around"
-      >
-        <Box sx={{ width: '100%', maxWidth: 400 }}>
-          <RadarChart
-            {...commonSettings}
-            series={withOptions([lisaGrades, bartGrades])}
-          />
-        </Box>
-      </Stack>
+    <Box sx={{ width: "100%", display: "flex", justifyContent: "center" }}>
+      <RadarChart
+        height={300}
+        series={series}
+        margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
+        radar={{
+          max: 100, // Match percentage max is 100
+          metrics: metrics,
+        }}
+      />
     </Box>
   );
 }
-
-const commonSettings = {
-  height: 300,
-  radar: {
-    max: 120,
-    metrics: ['Math', 'Chinese', 'English', 'Geography', 'Physics', 'History'],
-  },
-};
-const lisaGrades = {
-  label: 'Lisa',
-  data: [120, 98, 86, 99, 85, 65],
-  hideMark: false,
-} satisfies RadarSeries;
-const bartGrades = {
-  label: 'Bart',
-  data: [25, 34, 51, 16, 90, 20],
-  hideMark: false,
-} satisfies RadarSeries;
