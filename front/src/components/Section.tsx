@@ -16,7 +16,7 @@ export function Section({
   };
   return (
     <section
-      className={`section py-4 sm:py-8 md:py-20 ${variantClasses[variant]} ${className}`}
+      className={`section py-4 sm:py-8 md:py-10 ${variantClasses[variant]} ${className}`}
       {...props}
     />
   );

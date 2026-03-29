@@ -1,5 +1,0 @@
-@import "@front/index.css";
-
-.button {
-  @apply bg-surface/80 hover:bg-brand/60 transition-colors duration-100 text-text text-sm border border-brand/20 rounded-lg text-nowrap hover:cursor-pointer;
-}
