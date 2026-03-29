@@ -14,6 +14,7 @@ export type Room = {
     createdBy: User;
     isAnonymous: boolean;
     isPrivate: boolean;
+    roomID: string;
     members: string[]; // List of usernames
     password?: string;
 }

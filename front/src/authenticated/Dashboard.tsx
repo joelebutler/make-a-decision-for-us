@@ -40,18 +40,18 @@ const Dashboard = () => {
 
       // Fetch owned lobbies
       const ownedResults: Lobby[] = await Promise.all(
-        owned.map(async (roomId) => {
+        owned.map(async (roomID) => {
           try {
-            const res = await fetch(`${APIEndpoints.ROOM_BASE}${roomId}`);
+            const res = await fetch(`${APIEndpoints.ROOM_BASE}${roomID}`);
             if (!res.ok) throw new Error();
             const data: Room = await res.json();
             return {
-              id: roomId,
+              id: roomID,
               name: data.name,
               members: Array.isArray(data.members) ? data.members : "Unknown",
             };
           } catch {
-            return { id: roomId, name: roomId, members: "Unknown" };
+            return { id: roomID, name: roomID, members: "Unknown" };
           }
         }),
       );
@@ -60,18 +60,18 @@ const Dashboard = () => {
       // Fetch joined lobbies (excluding those already owned)
       const joinedFiltered = joined.filter((id) => !owned.includes(id));
       const joinedResults: Lobby[] = await Promise.all(
-        joinedFiltered.map(async (roomId) => {
+        joinedFiltered.map(async (roomID) => {
           try {
-            const res = await fetch(`${APIEndpoints.ROOM_BASE}${roomId}`);
+            const res = await fetch(`${APIEndpoints.ROOM_BASE}${roomID}`);
             if (!res.ok) throw new Error();
             const data: Room = await res.json();
             return {
-              id: roomId,
+              id: roomID,
               name: data.name,
               members: Array.isArray(data.members) ? data.members : "Unknown",
             };
           } catch {
-            return { id: roomId, name: roomId, members: "Unknown" };
+            return { id: roomID, name: roomID, members: "Unknown" };
           }
         }),
       );

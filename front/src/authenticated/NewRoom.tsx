@@ -62,12 +62,12 @@ function NewRoom() {
         if (user && user.username) {
           await refreshUser();
         }
-        if (data && data.roomId) {
-          navigate("/room/" + data.roomId);
+        if (data && data.roomID) {
+          navigate("/room/" + data.roomID);
         } else {
           setMessage({
             type: "error",
-            text: "Room created but no roomId returned.",
+            text: "Room created but no roomID returned.",
           });
         }
       } else {
