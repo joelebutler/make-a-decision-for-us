@@ -1,9 +1,10 @@
-import type { ComponentProps } from "react";
+import { useState, type ComponentProps } from "react";
 import { useUser } from "@front/components/UserContext";
 import { NavLink } from "@front/components/NavLink";
 import { NavLink as RouterLink, useNavigate } from "react-router";
 import { Button } from "./Button";
 import Menu from "./Menu";
+import { applyTheme, type Theme } from "./types";
 
 type HeaderProps = ComponentProps<"header"> & {
   mode: string;
@@ -79,6 +80,7 @@ export function Header({
                       label: "Logout",
                       onClick: () => {
                         setUser(null);
+                        applyTheme("default");
                         navigate("/");
                       },
                       className:

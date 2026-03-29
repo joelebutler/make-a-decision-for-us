@@ -1,7 +1,7 @@
 import { Button } from "@front/components/Button";
 import { Card } from "@front/components/Card";
 import { Section } from "@front/components/Section";
-import { useUser } from "@front/components/UserContext";
+import { NavLink } from "react-router";
 
 function Dashboard() {
   // const { user } = useUser();
@@ -46,9 +46,11 @@ function Dashboard() {
 
         {/* Main Actions */}
 
-        <Button className="md:col-span-1 p-2">Start a room</Button>
-        <Button className="md:col-span-1 p-2">Join Existing</Button>
         <Button className="md:col-span-1 p-2">Decide for Me</Button>
+        <Button className="md:col-span-1 p-2">Join Existing</Button>
+        <NavLink to="/room/new">
+          <Button className="w-full md:col-span-1 p-2">Start a room</Button>
+        </NavLink>
 
         {/* Active Discussions / Lobbies */}
         <Card className="md:col-span-3 min-h-50">

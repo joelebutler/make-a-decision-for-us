@@ -9,6 +9,7 @@ import AuthenticatedContent from "@front/components/AuthenticatedContent";
 import Settings from "./authentication/Settings";
 import ThemeInitializer from "@front/components/ThemeInitializer";
 import { UserProvider } from "@front/components/UserContext";
+import NewRoom from "./authenticated/NewRoom";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -35,6 +36,17 @@ createRoot(document.getElementById("root")!).render(
               </AuthenticatedContent>
             }
           />
+          <Route path="room">
+            <Route
+              path="new"
+              element={
+                <AuthenticatedContent>
+                  <NewRoom />
+                </AuthenticatedContent>
+              }
+            />
+          </Route>
+
           <Route path="*" element={<h1>Page not found.</h1>} />
         </Routes>
       </BrowserRouter>

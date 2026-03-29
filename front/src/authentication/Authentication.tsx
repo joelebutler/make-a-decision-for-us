@@ -172,7 +172,7 @@ function Authentication() {
                 />
                 <Button
                   type="submit"
-                  className="w-full mt-2"
+                  className="w-full mt-2 px-2 py-1"
                   disabled={loading}
                 >
                   {loading

@@ -3,6 +3,7 @@ import { Card } from "@front/components/Card";
 import { Header } from "@front/components/Header";
 import { Main, PageLayout } from "@front/components/PageLayout";
 import { Section } from "@front/components/Section";
+import { NavLink as RouterLink } from "react-router";
 
 function Home() {
   return (
@@ -19,7 +20,9 @@ function Home() {
               is the perfect place for you and your friends to agree on... well,
               anything!
             </p>
-            <Button>Let's Get Started!</Button>
+            <RouterLink to="/register">
+              <Button className="px-2 py-1">Let's Get Started!</Button>
+            </RouterLink>
           </div>
         </Section>
         <Section variant="clear">
