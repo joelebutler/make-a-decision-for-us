@@ -20,12 +20,47 @@ export default function Chart({ metrics, data, label }: ChartProps) {
   return (
     <Box sx={{ width: "100%", display: "flex", justifyContent: "center" }}>
       <RadarChart
-        height={300}
+        height={320}
         series={series}
-        margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
+        margin={{ top: 50, right: 50, bottom: 50, left: 50 }}
         radar={{
           max: 100, // Match percentage max is 100
           metrics: metrics,
+        }}
+        sx={{
+          "& .MuiChartsLegend-root": { display: "none" },
+          "& .MuiChartsAxis-tickLabel": {
+            fill: "var(--text)",
+            fontSize: "13px",
+            fontFamily: "var(--font-sans)",
+            fontWeight: "900",
+          },
+          "& .MuiChartsRadar-polygon": {
+            fill: "var(--brand) !important",
+            fillOpacity: "0.25 !important",
+            stroke: "var(--brand) !important",
+            strokeWidth: "3px !important",
+            strokeLinejoin: "round",
+          },
+          "& .MuiChartsRadar-mark": {
+            fill: "var(--brand) !important",
+            stroke: "var(--surface) !important",
+            strokeWidth: "2px !important",
+            r: 5,
+          },
+          "& line": {
+            stroke: "var(--brand)",
+            strokeOpacity: 0.3,
+            strokeWidth: 1.5,
+          },
+          "& polygon.MuiChartsGrid-line": {
+            stroke: "var(--brand)",
+            strokeOpacity: 0.15,
+            strokeDasharray: "none",
+            strokeWidth: 1,
+            fill: "var(--brand)",
+            fillOpacity: 0.03,
+          },
         }}
       />
     </Box>

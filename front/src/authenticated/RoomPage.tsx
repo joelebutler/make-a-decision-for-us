@@ -1069,32 +1069,20 @@ function RoomPage() {
                       </span>
                     </div>
 
-                    {/* Top Text Section */}
-                    <div className="p-8 pb-6 border-b-2 border-surface-elevated flex flex-col gap-4 h-1/2">
-                      <h3 className="text-3xl font-black text-text leading-tight pr-14 mt-2">
-                        {item.title || `Option ${index + 1}`}
-                      </h3>
-                      <p className="text-base text-text-muted font-medium pr-2 leading-relaxed overflow-y-auto custom-scrollbar">
-                        {item.description ||
-                          "Gemini generated this option based on your factors, but no description was provided."}
-                      </p>
-                    </div>
-
                     {/* Radar Chart Section */}
-                    <div className="bg-surface-muted/30 p-8 flex flex-col h-1/2">
-                      <div className="text-xs font-black text-text-muted uppercase tracking-widest mb-6 text-center">
-                        Factor Match Score
-                      </div>
-                      <div className="flex-1 flex items-center justify-center w-full min-h-[220px]">
+                    <div className="bg-surface-muted/30 pt-6 px-2 pb-4 flex-none flex flex-col justify-center border-b-2 border-surface-elevated relative">
+                      <div className="flex items-center justify-center w-full min-h-[280px]">
                         {item.factors && item.factors.length > 0 ? (
                           <Chart
                             metrics={item.factors.map((f: any) => {
                               const originalFactor = requests.find(
                                 (r) => String(r.id) === String(f.factorId),
                               );
-                              return (
-                                originalFactor?.title || `Factor ${f.factorId}`
-                              );
+                              const fullTitle =
+                                originalFactor?.title || `Factor ${f.factorId}`;
+                              return fullTitle.length > 16
+                                ? fullTitle.slice(0, 14) + "..."
+                                : fullTitle;
                             })}
                             data={item.factors.map((f: any) => f.matchPercent)}
                             label={`Match Score`}
@@ -1105,6 +1093,21 @@ function RoomPage() {
                           </div>
                         )}
                       </div>
+                    </div>
+
+                    {/* Top Section: Title */}
+                    <div className="px-8 pt-8 pb-3">
+                      <h3 className="text-2xl font-black text-text leading-tight pr-14">
+                        {item.title || `Option ${index + 1}`}
+                      </h3>
+                    </div>
+
+                    {/* Description Section */}
+                    <div className="px-8 pb-8 flex-1 overflow-y-auto custom-scrollbar bg-surface z-10">
+                      <p className="text-base text-text-muted font-medium leading-relaxed mt-2">
+                        {item.description ||
+                          "Gemini generated this option based on your factors, but no description was provided."}
+                      </p>
                     </div>
                   </Card>
                 ))}
