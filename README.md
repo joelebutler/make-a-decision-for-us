@@ -1,20 +1,30 @@
-## Inspiration
-Hard decisions can come from anywhere. Whether you are by yourself or trying to decide with a group, having a tool to help you weigh several different factors at a time and find you options in real time would be extremely helpful.
+# Kimaru - Make a Decision For Us!
 
-## What it does
-Kimaru.tech uses Google Gemini AI to send specific instructions for user's problem and weighing various factors to return ranked options and displaying the percent match of each factor. There will also be a summary of each option given.
+## 💡 Inspiration
+Hard decisions can come from anywhere. Whether you're trying to figure something out by yourself or stuck in "analysis paralysis" with a group of friends trying to decide on plans, things get complicated fast. We wanted a tool that helps weigh several different factors at once and actually finds viable options in real time.
 
-## How we built it
-We built the web app using bun framework, mongodb backend, react components, google gemini, tailwind css, ariakit, and deployed on render.
+## 🛠️ What it does
+Kimaru uses Google Gemini AI to untangle your group's conflicting preferences. Users submit their problem and weigh various custom factors into a central room. Our system packages these up with specific instructions and returns ranked, viable options—complete with a radar chart showing the exact percent match of how well each option satisfies the group's factors, alongside an AI summary explaining the choice.
 
-## Challenges we ran into
-API limits, some teammates learning new languages and technologies, endpoint issues and debugging, first time using and setting up mongodb.
+## 🏗️ How we built it
+We built the web app using a modern, fast stack:
+- **Backend:** Bun, MongoDB, Google Gemini SDK
+- **Frontend:** React, Tailwind CSS, Ariakit, MUI x-charts
+- **Hosting:** Deployed on Render
 
-## Accomplishments that we're proud of
-The web app turned out much better than we imagined. The UI looks great and the results from the gemini call in the right format were exhilarating.
+## ⚠️ Challenges we ran into
+- Navigating AI API limits constraints and ensuring consistent JSON model outputs.
+- Some teammates were learning new languages and technologies on the fly!
+- Untangling some sticky endpoint routing issues and debugging Bun workspaces.
+- Our first time setting up and querying MongoDB from scratch.
 
-## What we learned
-We learned a ton about api endpoints, experience learning ai models, bun framework, typescript, and mongodb.
+## 🏆 Accomplishments that we're proud of
+The web app turned out much better than we originally imagined! The UI feels incredibly snappy and fun to use, and finally getting the Google Gemini call to return exactly the right JSON format to power our match-score charts was exhilarating.
 
-## What's next for Decisions For Us
-We would like to continue cleaning up the UI/UX, scaling for larger deployment, AI api key handling. 
+## 🧠 What we learned
+We learned a ton about designing robust API endpoints, practical experience prompting AI models for structured data, using the Bun runtime, wrangling complex TypeScript types, and working with document-based MongoDB.
+
+## 🚀 What's next?
+- Continuing to polish the UI/UX animations and mobile responsiveness.
+- Adding better state-synchronization for realtime group updates (WebSockets).
+- Scaling for larger deployment and safely proxying user AI API keys. 
