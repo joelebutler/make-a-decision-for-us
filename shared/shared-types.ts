@@ -3,6 +3,8 @@ export type User = {
     email?: string;
     password?: string;
     theme?: string;
+    ownedLobbies?: string[];
+    joinedLobbies?: string[];
 }
 
 export type Room = {

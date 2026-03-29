@@ -29,7 +29,7 @@ function Authentication() {
   const [message, setMessage] = useState<Message | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
   const navigate = useNavigate();
-  const { user, setUser } = useUser();
+  const { user, setUser, setToken } = useUser();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -52,13 +52,34 @@ function Authentication() {
           }),
         });
         if (res.ok) {
-          setMessage({
-            type: "success",
-            text: "Registration successful! You can now log in.",
+          // After registration, log in to get JWT
+          const loginRes = await fetch("/api/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              username: form.username,
+              password: form.password,
+            }),
           });
-          setMode("login");
-          setForm({ username: "", email: "", password: "" });
-          formRef.current?.reset();
+          if (loginRes.ok) {
+            const { user, token } = await loginRes.json();
+            setUser(user);
+            setToken(token);
+            setMessage({
+              type: "success",
+              text: "Registration and login successful!",
+            });
+            if (user.theme) applyTheme(user.theme);
+            navigate("/dashboard");
+          } else {
+            setMessage({
+              type: "success",
+              text: "Registration successful! Please log in.",
+            });
+            setMode("login");
+            setForm({ username: "", email: "", password: "" });
+            formRef.current?.reset();
+          }
         } else {
           const text = await res.text();
           setMessage({
@@ -75,7 +96,7 @@ function Authentication() {
     } else {
       // Login logic
       try {
-        const res = await fetch(APIEndpoints.GET_USER, {
+        const res = await fetch("/api/login", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -84,11 +105,11 @@ function Authentication() {
           }),
         });
         if (res.ok) {
-          // Expecting JSON user data
-          const user = await res.json();
-          if (user && user.username) {
+          const { user, token } = await res.json();
+          if (user && user.username && token) {
             setMessage({ type: "success", text: "Login successful!" });
             setUser(user);
+            setToken(token);
             if (user.theme) applyTheme(user.theme);
             navigate("/dashboard");
           } else {

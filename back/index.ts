@@ -2,6 +2,7 @@ import { MongoClient } from 'mongodb';
 import bcrypt from 'bcryptjs';
 import { ROOM_DB, USER_DB } from './defines';
 import { APIEndpoints, type Room, type User } from '@shared/shared-types';
+import { signJwt, verifyJwt } from './jwt';
 
 Bun.serve({
     port: Bun.env.PORT,
@@ -28,6 +29,28 @@ Bun.serve({
 
 async function Route(request: Request, url: URL): Promise<Response> {
     const body = await request.text();
+    if (url.pathname == '/api/login' && request.method === 'POST') {
+        try {
+            if (!body) {
+                return new Response("Missing request body", { status: 400 });
+            }
+            const { username, password } = JSON.parse(body);
+            const user = await getUser({ username, password });
+            if (!user) {
+                return new Response("Invalid username or password.", { status: 401 });
+            }
+            // Don't include password in JWT or response
+            const token = await signJwt({ username: user.username });
+            return new Response(JSON.stringify({ token, user }), {
+                status: 200,
+                headers: { "Content-Type": "application/json" },
+            });
+        } catch (err) {
+            console.error("Login error:", err);
+            return new Response("Login failed", { status: 500 });
+        }
+    }
+
     if (url.pathname == APIEndpoints.REGISTER && request.method === 'POST') {
         try {
             if (!body) {
@@ -49,25 +72,29 @@ async function Route(request: Request, url: URL): Promise<Response> {
         }
     }
 
-    if (url.pathname == APIEndpoints.GET_USER && request.method === 'POST') {
+    if (url.pathname == APIEndpoints.GET_USER && request.method === 'GET') {
         try {
-            if (!body) {
-                return new Response("Missing request body", { status: 400 });
+            const auth = request.headers.get('Authorization');
+            if (!auth || !auth.startsWith('Bearer ')) {
+                return new Response('Missing or invalid Authorization header', { status: 401 });
             }
-            const user: User = JSON.parse(body);
-            const found = await getUser(user);
+            const token = auth.replace('Bearer ', '');
+            const payload = await verifyJwt(token);
+            if (!payload || !payload.username) {
+                return new Response('Invalid or expired token', { status: 401 });
+            }
+            const found = await getUser({ username: payload.username });
             if (found) {
-                // Return user data as JSON
                 return new Response(JSON.stringify(found), {
                     status: 200,
                     headers: { "Content-Type": "application/json" },
                 });
             } else {
-                return new Response("Invalid username or password.", { status: 404 });
+                return new Response("User not found.", { status: 404 });
             }
         } catch (err) {
-            console.error("Error finding user: ", err);
-            return new Response("Invalid username or password.", { status: 404 });
+            console.error("Error verifying token: ", err);
+            return new Response("Invalid token.", { status: 401 });
         }
     }
 
@@ -169,6 +196,7 @@ async function getUser(user: User) {
         const users = client.db(Bun.env.DB_NAME).collection(USER_DB);
         // Find user by username only
         const result = await users.findOne({ username: user.username });
+        console.log('MongoDB user document:', result);
         if (!result) {
             return null;
         }
@@ -243,9 +271,9 @@ async function createRoom(room: Partial<Room>): Promise<string> {
             const users = client.db(Bun.env.DB_NAME).collection(USER_DB);
             await users.updateOne(
                 { username: room.createdBy.username },
-                { $addToSet: { ownedRooms: roomId } }
+                { $addToSet: { ownedLobbies: roomId } }
             );
-            console.log(`Added roomId: ${roomId} to user: ${room.createdBy.username}'s ownedRooms array`);
+            console.log(`Added roomId: ${roomId} to user: ${room.createdBy.username}'s ownedLobbies array`);
         }
         return roomId;
     } catch (err) {

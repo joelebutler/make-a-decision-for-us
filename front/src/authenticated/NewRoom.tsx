@@ -2,6 +2,7 @@ import { Button } from "@front/components/Button";
 import { Card } from "@front/components/Card";
 import { Section } from "@front/components/Section";
 import { useState } from "react";
+import { useUser } from "@front/components/UserContext";
 import { Switch } from "@front/components/Switch";
 import { Tooltip } from "@front/components/Tooltip";
 import { FiInfo } from "react-icons/fi";
@@ -27,21 +28,17 @@ function NewRoom() {
     isAnonymous: false,
   });
   const navigate = useNavigate();
+  const { user, refreshUser } = useUser();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setMessage(null);
     setLoading(true);
     try {
-      // Get user from localStorage
+      // Use user from context
       let createdBy: User | undefined = undefined;
-      try {
-        const user = JSON.parse(localStorage.getItem("user") || "null");
-        if (user && user.username) {
-          createdBy = { username: user.username, email: user.email };
-        }
-      } catch (err) {
-        console.warn("Failed to parse user from localStorage:", err);
+      if (user && user.username) {
+        createdBy = { username: user.username, email: user.email };
       }
       const payload: Partial<Room> = {
         name: form.name,
@@ -58,6 +55,10 @@ function NewRoom() {
       });
       if (res.ok) {
         const data = await res.json();
+        // Refresh user data after room creation
+        if (user && user.username) {
+          await refreshUser();
+        }
         if (data && data.roomId) {
           navigate("/room/" + data.roomId);
         } else {
