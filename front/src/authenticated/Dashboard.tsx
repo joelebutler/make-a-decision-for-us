@@ -6,53 +6,54 @@ import { useEffect, useState } from "react";
 import { APIEndpoints, type Room } from "@shared/shared-types";
 import { NavLink } from "react-router";
 
-function Dashboard() {
-  // const { user } = useUser();
-  // Placeholder data
-  type friend = {
-    name: string;
-    status: "online" | "offline";
-  };
+interface Friend {
+  name: string;
+  status: "online" | "offline";
+}
 
-  type lobby = {
-    id: string;
-    name: string;
-    members: number;
-  };
+interface Lobby {
+  id: string;
+  name: string;
+  members: number | string;
+}
+
+const Dashboard = () => {
   const { user, refreshUser } = useUser();
-  refreshUser();
-  const friends: friend[] = [];
-
-  const [lobbies, setLobbies] = useState<lobby[]>([]);
+  const [lobbies, setLobbies] = useState<Lobby[]>([]);
+  // Placeholder: friends list is empty
+  const friends: Friend[] = [];
 
   // Refresh user on mount
   useEffect(() => {
-    console.log("Dashboard mounted, refreshing user...");
     refreshUser();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Fetch lobbies when user.ownedLobbies changes
   useEffect(() => {
-    async function fetchLobbies() {
-      if (!user?.ownedLobbies || user.ownedLobbies.length === 0) {
+    const fetchLobbies = async () => {
+      if (!user?.ownedLobbies?.length) {
         setLobbies([]);
         return;
       }
-      const results: lobby[] = await Promise.all(
+      const results: Lobby[] = await Promise.all(
         user.ownedLobbies.map(async (roomId) => {
           try {
             const res = await fetch(`${APIEndpoints.ROOM_BASE}${roomId}`);
             if (!res.ok) throw new Error();
             const data: Room = await res.json();
-            return { id: roomId, name: data.name, members: 1 };
+            return {
+              id: roomId,
+              name: data.name,
+              members: data.members || "Unknown",
+            };
           } catch {
-            return { id: roomId, name: roomId, members: 1 };
+            return { id: roomId, name: roomId, members: "Unknown" };
           }
         }),
       );
       setLobbies(results);
-    }
+    };
     fetchLobbies();
   }, [user]);
 
@@ -76,15 +77,12 @@ function Dashboard() {
                 </li>
               ))
             ) : (
-              <>
-                <p>No friends found.</p>
-              </>
+              <p>No friends found.</p>
             )}
           </ul>
         </Card>
 
         {/* Main Actions */}
-
         <Button className="md:col-span-1 p-2">Decide for Me</Button>
         <Button className="md:col-span-1 p-2">Join Existing</Button>
         <NavLink to="/room/new">
@@ -98,12 +96,13 @@ function Dashboard() {
             {lobbies.length > 0 ? (
               lobbies.map((lobby) => (
                 <li
-                  key={lobby.name}
+                  key={lobby.id}
                   className="flex items-center justify-between p-2 rounded hover:bg-surface/70 transition"
                 >
                   <span className="font-medium">{lobby.name}</span>
                   <span className="text-xs text-gray-500">
-                    {lobby.members} members
+                    {lobby.members !== "Unknown" && "members"}
+                    {lobby.members}
                   </span>
                   <NavLink to={`/room/${lobby.id}`}>
                     <button className="ml-4 px-3 py-1 rounded bg-brand text-white text-xs font-semibold hover:bg-brand/80 transition">
@@ -120,6 +119,6 @@ function Dashboard() {
       </div>
     </Section>
   );
-}
+};
 
 export default Dashboard;

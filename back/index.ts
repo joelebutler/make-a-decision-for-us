@@ -1,8 +1,11 @@
 import { MongoClient } from 'mongodb';
 import bcrypt from 'bcryptjs';
-import { ROOM_DB, USER_DB } from './defines';
-import { APIEndpoints, type Room, type User } from '@shared/shared-types';
+import { ROOM_DB, SYSTEM_INSTRUCTIONS, USER_DB } from './defines';
+import { APIEndpoints, type Room, type GeminiRequest, type User } from '@shared/shared-types';
 import { signJwt, verifyJwt } from './jwt';
+import { GenerateContentResponse, GoogleGenAI } from "@google/genai";
+
+const ai = new GoogleGenAI({});
 
 Bun.serve({
     port: Bun.env.PORT,
@@ -75,25 +78,31 @@ async function Route(request: Request, url: URL): Promise<Response> {
     if (url.pathname == APIEndpoints.GET_USER && request.method === 'GET') {
         try {
             const auth = request.headers.get('Authorization');
+            console.log(`[GET_USER] Request received. Authorization:`, auth);
             if (!auth || !auth.startsWith('Bearer ')) {
+                console.log('[GET_USER] Missing or invalid Authorization header');
                 return new Response('Missing or invalid Authorization header', { status: 401 });
             }
             const token = auth.replace('Bearer ', '');
             const payload = await verifyJwt(token);
+            console.log(`[GET_USER] Token payload:`, payload);
             if (!payload || !payload.username) {
+                console.log('[GET_USER] Invalid or expired token');
                 return new Response('Invalid or expired token', { status: 401 });
             }
-            const found = await getUser({ username: payload.username });
+            const found = await getUser({ username: payload.username } as User);
+            console.log(`[GET_USER] DB lookup for username: ${payload.username} result:`, found);
             if (found) {
                 return new Response(JSON.stringify(found), {
                     status: 200,
                     headers: { "Content-Type": "application/json" },
                 });
             } else {
+                console.log('[GET_USER] User not found');
                 return new Response("User not found.", { status: 404 });
             }
         } catch (err) {
-            console.error("Error verifying token: ", err);
+            console.error("[GET_USER] Error verifying token: ", err);
             return new Response("Invalid token.", { status: 401 });
         }
     }
@@ -157,6 +166,21 @@ async function Route(request: Request, url: URL): Promise<Response> {
         }
     }
     
+    if (url.pathname == APIEndpoints.CALL_GEMINI && request.method === 'POST') {
+        try {
+            if (!body) {
+                return new Response("Missing request body", { status: 400 });
+            }
+            console.log("making request to gemini genai:", body);
+            const prompt: GeminiRequest = JSON.parse(body);
+            await callGemini(prompt);
+            return new Response("Received response from gemini", { status: 201 });
+        } catch (err) {
+            console.error("Error calling gemini ai:", err);
+            return new Response((err instanceof Error ? err.message : "Error calling gemini ai"), { status: 500 });
+        }
+    }
+
     return new Response("Not Found", { status: 404 });
 
 }
@@ -200,11 +224,12 @@ async function getUser(user: User) {
         if (!result) {
             return null;
         }
-        if (!user.password) throw "Password is required for login.";
-        // Compare password hash
-        const passwordMatch = await bcrypt.compare(user.password, result.password);
-        if (!passwordMatch) {
-            return null;
+        // If password is provided, check it (for login)
+        if (user.password) {
+            const passwordMatch = await bcrypt.compare(user.password, result.password);
+            if (!passwordMatch) {
+                return null;
+            }
         }
         // Remove password from returned user object
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -311,3 +336,19 @@ async function createRoom(room: Partial<Room>): Promise<string> {
             await client.close();
         }
     }
+
+async function callGemini( request: GeminiRequest) {
+    const sendContents:string = SYSTEM_INSTRUCTIONS + "\n\n" + request;
+    JSON.stringify(sendContents);
+
+    try {
+        const response: GenerateContentResponse = await ai.models.generateContent({
+            model: "gemini-3-flash-preview",
+            contents: sendContents
+        });
+        console.log(response);
+    } catch (err) {
+        console.log(err);
+    }
+
+}
