@@ -1,7 +1,7 @@
 import { MongoClient } from 'mongodb';
 import bcrypt from 'bcryptjs';
-import { USER_DB } from './defines';
-import { APIEndpoints, type User } from '@shared/shared-types';
+import { ROOM_DB, USER_DB } from './defines';
+import { APIEndpoints, type Room, type User } from '@shared/shared-types';
 
 Bun.serve({
     port: Bun.env.PORT,
@@ -107,6 +107,29 @@ async function Route(request: Request, url: URL): Promise<Response> {
         }
     }
     
+    // GET /api/room/:id - fetch a room by roomId
+    if (url.pathname.startsWith(APIEndpoints.ROOM_BASE) && request.method === 'GET') {
+        const roomId = url.pathname.split('/').pop();
+        return await getRoomById(roomId);
+    }
+
+    if (url.pathname == APIEndpoints.CREATE_ROOM && request.method === 'POST') {
+        try {
+            if (!body) {
+                return new Response("Missing request body", { status: 400 });
+            }
+            const room: Partial<Room> = JSON.parse(body);
+            const roomId = await createRoom(room);
+            return new Response(JSON.stringify({ roomId }), {
+                status: 201,
+                headers: { "Content-Type": "application/json" },
+            });
+        } catch (err) {
+            console.error("Error creating room:", err);
+            return new Response((err instanceof Error ? err.message : "Error creating room"), { status: 500 });
+        }
+    }
+    
     return new Response("Not Found", { status: 404 });
 
 }
@@ -184,5 +207,79 @@ async function updateTheme(user: User) {
     } catch (err) {
         console.log(err);
     }
-
 }
+
+async function createRoom(room: Partial<Room>): Promise<string> {
+    const uri = Bun.env.CONNECTION_STRING || "";
+    const client = new MongoClient(uri);
+    try {
+        const rooms = client.db(Bun.env.DB_NAME).collection(ROOM_DB);
+        await client.connect();
+
+        let roomId: string = "";
+        let exists = true;
+        const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        function genId() {
+            let id = "";
+            for (let i = 0; i < 8; i++) {
+                id += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return id;
+        }
+        while (exists) {
+            roomId = genId();
+            const result = await rooms.findOne({ roomId });
+            exists = result !== null;
+        }
+
+        const roomToInsert = { ...room, roomId };
+        if (room.password) {
+            roomToInsert.password = await bcrypt.hash(room.password, 12);
+        }
+        const result = await rooms.insertOne(roomToInsert);
+        console.log(`New room created with the following id: ${result.insertedId}, roomId: ${roomId}`);
+
+        if (room.createdBy) {
+            const users = client.db(Bun.env.DB_NAME).collection(USER_DB);
+            await users.updateOne(
+                { username: room.createdBy.username },
+                { $addToSet: { ownedRooms: roomId } }
+            );
+            console.log(`Added roomId: ${roomId} to user: ${room.createdBy.username}'s ownedRooms array`);
+        }
+        return roomId;
+    } catch (err) {
+        console.error(err);
+        throw err
+    } finally {
+        await client.close();
+    }
+}
+
+    // Fetch a room by its roomId
+    async function getRoomById(roomId?: string): Promise<Response> {
+        if (!roomId) {
+            return new Response("Missing roomId", { status: 400 });
+        }
+        const uri = Bun.env.CONNECTION_STRING || "";
+        const client = new MongoClient(uri);
+        try {
+            await client.connect();
+            const rooms = client.db(Bun.env.DB_NAME).collection(ROOM_DB);
+            const found = await rooms.findOne({ roomId });
+            if (!found) {
+                return new Response("Room not found", { status: 404 });
+            }
+            // Remove password from response
+            if (found.password) delete found.password;
+            return new Response(JSON.stringify(found), {
+                status: 200,
+                headers: { "Content-Type": "application/json" },
+            });
+        } catch (err) {
+            console.error("Error fetching room:", err);
+            return new Response("Error fetching room", { status: 500 });
+        } finally {
+            await client.close();
+        }
+    }

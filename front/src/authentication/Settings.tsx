@@ -52,7 +52,6 @@ function Settings() {
               <div className="text-xs text-gray-500 mt-2">Saving...</div>
             )}
           </div>
-          {/* Add more settings here */}
         </Card>
       </div>
     </Section>

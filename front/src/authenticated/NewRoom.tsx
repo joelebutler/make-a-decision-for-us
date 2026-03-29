@@ -5,34 +5,109 @@ import { useState } from "react";
 import { Switch } from "@front/components/Switch";
 import { Tooltip } from "@front/components/Tooltip";
 import { FiInfo } from "react-icons/fi";
+import { APIEndpoints, type Message } from "@shared/shared-types";
+
+import type { User, Room } from "@shared/shared-types";
+import { useNavigate } from "react-router";
+
+type FormState = {
+  name: string;
+  isPrivate: boolean;
+  password?: string;
+  isAnonymous: boolean;
+};
 
 function NewRoom() {
-  const [loading] = useState(false);
-  const [isPrivate, setIsPrivate] = useState(false);
-  const [roomPassword, setRoomPassword] = useState("");
-  const [isAnonymous, setIsAnonymous] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState<Message | null>(null);
+  const [form, setForm] = useState<FormState>({
+    name: "",
+    isPrivate: false,
+    password: "",
+    isAnonymous: false,
+  });
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setMessage(null);
+    setLoading(true);
+    try {
+      // Get user from localStorage
+      let createdBy: User | undefined = undefined;
+      try {
+        const user = JSON.parse(localStorage.getItem("user") || "null");
+        if (user && user.username) {
+          createdBy = { username: user.username, email: user.email };
+        }
+      } catch (err) {
+        console.warn("Failed to parse user from localStorage:", err);
+      }
+      const payload: Partial<Room> = {
+        name: form.name,
+        isPrivate: form.isPrivate,
+        isAnonymous: form.isAnonymous,
+        password: form.isPrivate ? form.password : undefined,
+        createdBy,
+        createdAt: new Date(),
+      };
+      const res = await fetch(APIEndpoints.CREATE_ROOM, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.roomId) {
+          navigate("/room/" + data.roomId);
+        } else {
+          setMessage({
+            type: "error",
+            text: "Room created but no roomId returned.",
+          });
+        }
+      } else {
+        const text = await res.text();
+        setMessage({
+          type: "error",
+          text: text || "Room creation failed.",
+        });
+      }
+    } catch (err) {
+      console.error("Room creation error:", err);
+      setMessage({ type: "error", text: "Network error. Please try again." });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <Section>
       <div className="container mx-auto px-4 flex flex-col items-center justify-center min-h-[60vh]">
         <Card className="max-w-md w-full mx-auto">
           <h1 className="text-3xl font-bold mb-6 text-center">Create a Room</h1>
-          <form className="flex flex-col gap-4" autoComplete="off">
+          <form
+            className="flex flex-col gap-4"
+            autoComplete="off"
+            onSubmit={handleSubmit}
+          >
             <div>
               <label
-                htmlFor="roomName"
+                htmlFor="name"
                 className="text-sm font-medium text-text/80"
               >
                 Room Name
               </label>
               <input
                 type="text"
-                name="roomName"
+                name="name"
                 placeholder="My Difficult Decision"
                 className="px-4 py-2 text-sm rounded border border-brand/30 bg-surface/60 focus:outline-none focus:ring-2 focus:ring-brand w-full"
                 required
-                // value={form.roomName}
-                // onChange={handleChange}
+                value={form.name}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, name: e.target.value }))
+                }
                 disabled={loading}
               />
             </div>
@@ -49,11 +124,13 @@ function NewRoom() {
                   <FiInfo className="w-4 h-4 text-brand cursor-pointer" />
                 </Tooltip>
               </div>
-              <div className="flex-shrink-0">
+              <div className="shrink-0">
                 <Switch
                   name="isAnonymous"
-                  checked={isAnonymous}
-                  onChange={setIsAnonymous}
+                  checked={form.isAnonymous}
+                  onChange={(val) =>
+                    setForm((f) => ({ ...f, isAnonymous: val }))
+                  }
                   aria-label="Anonymous Mode"
                 />
               </div>
@@ -68,11 +145,11 @@ function NewRoom() {
                   Private Room
                 </label>
               </div>
-              <div className="flex-shrink-0">
+              <div className="shrink-0">
                 <Switch
                   name={"isPrivate"}
-                  checked={isPrivate}
-                  onChange={setIsPrivate}
+                  checked={form.isPrivate}
+                  onChange={(val) => setForm((f) => ({ ...f, isPrivate: val }))}
                   aria-label="Private Room"
                 />
               </div>
@@ -80,22 +157,24 @@ function NewRoom() {
 
             <div>
               <label
-                htmlFor="roomPassword"
+                htmlFor="password"
                 className="text-sm font-medium text-text/80"
               >
                 Room Password
               </label>
               <input
                 type="password"
-                name="roomPassword"
+                name="password"
                 placeholder={
-                  isPrivate ? "mysupersecretpassword" : "Room is public..."
+                  form.isPrivate ? "mysupersecretpassword" : "Room is public..."
                 }
                 className="px-4 py-2 text-sm rounded border border-brand/30 bg-surface/60 focus:outline-none focus:ring-2 focus:ring-brand w-full disabled:bg-text/5 disabled:italic"
-                value={roomPassword}
-                onChange={(e) => setRoomPassword(e.target.value)}
-                disabled={loading || !isPrivate}
-                required={isPrivate}
+                value={form.password}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, password: e.target.value }))
+                }
+                disabled={loading || !form.isPrivate}
+                required={form.isPrivate}
               />
             </div>
 
@@ -107,6 +186,16 @@ function NewRoom() {
               {loading ? "Creating room..." : "Create Room"}
             </Button>
           </form>
+          {message &&
+            (message.type === "success" ? (
+              <div className="mt-4 text-center text-sm text-green-500">
+                {message.text}
+              </div>
+            ) : (
+              <div className="mt-4 text-center text-sm text-red-500">
+                {message.text}
+              </div>
+            ))}
         </Card>
       </div>
     </Section>

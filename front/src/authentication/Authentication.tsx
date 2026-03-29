@@ -8,17 +8,12 @@ import { useState, useRef, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router";
 import { useUser } from "@front/components/UserContext";
 import { applyTheme } from "@front/components/types";
-import { APIEndpoints } from "@shared/shared-types";
+import { APIEndpoints, type Message } from "@shared/shared-types";
 
 type FormState = {
   username: string;
   email: string;
   password: string;
-};
-
-type Message = {
-  type: "success" | "error";
-  text: string;
 };
 
 function Authentication() {

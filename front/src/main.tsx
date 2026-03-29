@@ -1,7 +1,7 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
-import { BrowserRouter, Route, Routes } from "react-router";
+import { BrowserRouter, Route, Routes, Outlet } from "react-router";
 import Home from "@front/home/Home.tsx";
 import Authentication from "@front/authentication/Authentication";
 import Dashboard from "@front/authenticated/Dashboard";
@@ -10,6 +10,7 @@ import Settings from "./authentication/Settings";
 import ThemeInitializer from "@front/components/ThemeInitializer";
 import { UserProvider } from "@front/components/UserContext";
 import NewRoom from "./authenticated/NewRoom";
+import RoomPage from "./authenticated/RoomPage";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -36,12 +37,21 @@ createRoot(document.getElementById("root")!).render(
               </AuthenticatedContent>
             }
           />
-          <Route path="room">
+
+          <Route path="room" element={<Outlet />}>
             <Route
               path="new"
               element={
                 <AuthenticatedContent>
                   <NewRoom />
+                </AuthenticatedContent>
+              }
+            />
+            <Route
+              path=":id"
+              element={
+                <AuthenticatedContent>
+                  <RoomPage />
                 </AuthenticatedContent>
               }
             />
