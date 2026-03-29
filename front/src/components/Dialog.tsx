@@ -9,14 +9,14 @@ interface DialogProps {
   setOpen: (open: boolean) => void;
 }
 export default function Dialog({ open, setOpen }: DialogProps) {
-  const [roomId, setRoomId] = useState("");
+  const [roomID, setRoomId] = useState("");
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    const trimmed = roomId.trim();
+    const trimmed = roomID.trim();
     if (!trimmed) {
       setError("Please enter a room ID.");
       return;
@@ -41,7 +41,7 @@ export default function Dialog({ open, setOpen }: DialogProps) {
         <input
           id="room-id"
           className="w-full border border-brand/20 rounded-lg px-3 py-2 mb-3 focus:outline-none focus:ring-2 focus:ring-brand bg-surface/80 text-text"
-          value={roomId}
+          value={roomID}
           onChange={(e) => setRoomId(e.target.value.toUpperCase())}
           placeholder="Enter code (e.g. 1A2B3C4D)"
           maxLength={8}

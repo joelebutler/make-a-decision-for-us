@@ -165,9 +165,9 @@ async function Route(request: Request, url: URL): Promise<Response> {
                 }
                 const { username } = JSON.parse(bodyText);
                 const pathParts = url.pathname.split('/');
-                const roomId = pathParts[pathParts.length - 2];
-                if (!roomId || !username) {
-                    return new Response("Missing roomId or username", { status: 400 });
+                const roomID = pathParts[pathParts.length - 2];
+                if (!roomID || !username) {
+                    return new Response("Missing roomID or username", { status: 400 });
                 }
                 const uri = Bun.env.CONNECTION_STRING || "";
                 const client = new MongoClient(uri);
@@ -177,13 +177,13 @@ async function Route(request: Request, url: URL): Promise<Response> {
                     const users = client.db(Bun.env.DB_NAME).collection(USER_DB);
                     // Remove user from room's members array
                     await rooms.updateOne(
-                        { roomId },
+                        { roomID },
                         { $pull: { members: username } }
                     );
                     // Remove room from user's joinedLobbies array
                     await users.updateOne(
                         { username },
-                        { $pull: { joinedLobbies: { $eq: roomId } } }
+                        { $pull: { joinedLobbies: { $eq: roomID } } }
                     );
                     return new Response("User removed from room and user's joined lobbies", { status: 200 });
                 } finally {
@@ -197,9 +197,9 @@ async function Route(request: Request, url: URL): Promise<Response> {
         if (url.pathname.startsWith(APIEndpoints.ROOM_BASE) && request.method === 'DELETE') {
             try {
                 const pathParts = url.pathname.split('/');
-                const roomId = pathParts[pathParts.length - 1];
-                if (!roomId) {
-                    return new Response("Missing roomId", { status: 400 });
+                const roomID = pathParts[pathParts.length - 1];
+                if (!roomID) {
+                    return new Response("Missing roomID", { status: 400 });
                 }
                 const uri = Bun.env.CONNECTION_STRING || "";
                 const client = new MongoClient(uri);
@@ -208,11 +208,11 @@ async function Route(request: Request, url: URL): Promise<Response> {
                     const rooms = client.db(Bun.env.DB_NAME).collection(ROOM_DB);
                     const users = client.db(Bun.env.DB_NAME).collection(USER_DB);
                     // Delete the room
-                    await rooms.deleteOne({ roomId });
-                    // Remove roomId from all users' ownedLobbies and joinedLobbies
+                    await rooms.deleteOne({ roomID });
+                    // Remove roomID from all users' ownedLobbies and joinedLobbies
                     await users.updateMany(
                         {},
-                        { $pull: { ownedLobbies: { $eq: roomId }, joinedLobbies: { $eq: roomId } } }
+                        { $pull: { ownedLobbies: { $eq: roomID }, joinedLobbies: { $eq: roomID } } }
                     );
                     return new Response("Room deleted and removed from all users", { status: 200 });
                 } finally {
@@ -232,9 +232,9 @@ async function Route(request: Request, url: URL): Promise<Response> {
                 return new Response("Missing request body", { status: 400 });
             }
             const { username } = JSON.parse(body);
-            const roomId = url.pathname.split('/')[url.pathname.split('/').length - 2];
-            if (!roomId || !username) {
-                return new Response("Missing roomId or username", { status: 400 });
+            const roomID = url.pathname.split('/')[url.pathname.split('/').length - 2];
+            if (!roomID || !username) {
+                return new Response("Missing roomID or username", { status: 400 });
             }
             const uri = Bun.env.CONNECTION_STRING || "";
             const client = new MongoClient(uri);
@@ -242,17 +242,17 @@ async function Route(request: Request, url: URL): Promise<Response> {
                 await client.connect();
                 const rooms = client.db(Bun.env.DB_NAME).collection(ROOM_DB);
                 const users = client.db(Bun.env.DB_NAME).collection(USER_DB);
-                const room = await rooms.findOne({ roomId });
+                const room = await rooms.findOne({ roomID });
                 if (!room) return new Response("Room not found", { status: 404 });
                 // Add user to room's members array if not present
                 const updateResult = await rooms.updateOne(
-                    { roomId },
+                    { roomID },
                     { $addToSet: { members: username } }
                 );
                 // Add room to user's joinedLobbies if not present
                 await users.updateOne(
                     { username },
-                    { $addToSet: { joinedLobbies: roomId } }
+                    { $addToSet: { joinedLobbies: roomID } }
                 );
                 if (updateResult.modifiedCount > 0) {
                     return new Response("User added to room", { status: 200 });
@@ -268,10 +268,10 @@ async function Route(request: Request, url: URL): Promise<Response> {
         }
     }
 
-    // GET /api/room/:id - fetch a room by roomId
+    // GET /api/room/:id - fetch a room by roomID
     if (url.pathname.startsWith(APIEndpoints.ROOM_BASE) && request.method === 'GET') {
-        const roomId = url.pathname.split('/').pop();
-        return await getRoomById(roomId);
+        const roomID = url.pathname.split('/').pop();
+        return await getRoomById(roomID);
     }
 
 
@@ -616,7 +616,7 @@ async function createRoom(room: Partial<Room>): Promise<string> {
         const rooms = client.db(Bun.env.DB_NAME).collection(ROOM_DB);
         await client.connect();
 
-        let roomId: string = "";
+        let roomID: string = "";
         let exists = true;
         const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
         function genId() {
@@ -627,27 +627,27 @@ async function createRoom(room: Partial<Room>): Promise<string> {
             return id;
         }
         while (exists) {
-            roomId = genId();
-            const result = await rooms.findOne({ roomId });
+            roomID = genId();
+            const result = await rooms.findOne({ roomID });
             exists = result !== null;
         }
 
-        const roomToInsert = { ...room, roomId };
+        const roomToInsert = { ...room, roomID };
         if (room.password) {
             roomToInsert.password = await bcrypt.hash(room.password, 12);
         }
         const result = await rooms.insertOne(roomToInsert);
-        console.log(`New room created with the following id: ${result.insertedId}, roomId: ${roomId}`);
+        console.log(`New room created with the following id: ${result.insertedId}, roomID: ${roomID}`);
 
         if (room.createdBy) {
             const users = client.db(Bun.env.DB_NAME).collection(USER_DB);
             await users.updateOne(
                 { username: room.createdBy.username },
-                { $addToSet: { ownedLobbies: roomId } }
+                { $addToSet: { ownedLobbies: roomID } }
             );
-            console.log(`Added roomId: ${roomId} to user: ${room.createdBy.username}'s ownedLobbies array`);
+            console.log(`Added roomID: ${roomID} to user: ${room.createdBy.username}'s ownedLobbies array`);
         }
-        return roomId;
+        return roomID;
     } catch (err) {
         console.error(err);
         throw err
@@ -656,22 +656,23 @@ async function createRoom(room: Partial<Room>): Promise<string> {
     }
 }
 
-    // Fetch a room by its roomId
-    async function getRoomById(roomId?: string): Promise<Response> {
-        if (!roomId) {
-            return new Response("Missing roomId", { status: 400 });
+    // Fetch a room by its roomID
+    async function getRoomById(roomID?: string): Promise<Response> {
+        if (!roomID) {
+            return new Response("Missing roomID", { status: 400 });
         }
         const uri = Bun.env.CONNECTION_STRING || "";
         const client = new MongoClient(uri);
         try {
             await client.connect();
             const rooms = client.db(Bun.env.DB_NAME).collection(ROOM_DB);
-            const found = await rooms.findOne({ roomId });
+            const found = await rooms.findOne({ roomID });
             if (!found) {
                 return new Response("Room not found", { status: 404 });
             }
             // Remove password from response
             if (found.password) delete found.password;
+            console.log(`Fetched room with id: ${roomID}`);
             return new Response(JSON.stringify(found), {
                 status: 200,
                 headers: { "Content-Type": "application/json" },

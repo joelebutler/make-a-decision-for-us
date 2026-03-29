@@ -11,7 +11,9 @@ function RoomPage() {
   const [room, setRoom] = useState<Room | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
+  const [friends] = useState<{ name: string; status: "online" | "offline" }[]>(
+    [],
+  ); // Placeholder friends list
   useEffect(() => {
     async function fetchRoomAndJoin() {
       setLoading(true);
@@ -70,31 +72,120 @@ function RoomPage() {
         <Card>Room not found.</Card>
       </Section>
     );
-
   return (
-    <Section>
-      <div className="container mx-auto px-4 flex flex-col items-center justify-center min-h-[60vh]">
-        <Card className="max-w-md w-full mx-auto">
-          <h1 className="text-3xl font-bold mb-6 text-center">{room.name}</h1>
-          <div className="mb-2 text-sm text-text/70 text-center">
-            Room ID: <span className="font-mono">{room.id}</span>
+    <div className="flex-1 flex flex-col h-full min-h-[80vh] w-full p-2 md:p-6">
+      {/* Mobile View */}
+      <div className="flex-1 flex flex-col gap-4 md:hidden">
+        <Card className="flex items-center justify-center text-center p-4">
+          <div>
+            <div className="text-xs uppercase tracking-wider mt-1">
+              {room.name}
+            </div>
+            <div className="text-lg text-nowrap font-bold break-all">
+              {room.roomID}
+            </div>
           </div>
-          <div className="mb-2 text-sm text-text/70 text-center">
-            Created by: {room.createdBy?.username || "Unknown"}
+        </Card>
+
+        <Card className="flex flex-col p-4 gap-4">
+          <div className="text-xs text-gray-500 uppercase tracking-wider">
+            Friends
           </div>
-          <div className="mb-2 text-sm text-text/70 text-center">
-            Created at:{" "}
-            {room.createdAt
-              ? new Date(room.createdAt).toLocaleString()
-              : "Unknown"}
+          <ul className="space-y-2">
+            {friends.length === 0 && (
+              <li className="text-gray-400 text-sm">No friends online.</li>
+            )}
+            {friends.map((friend, idx) => (
+              <li key={idx} className="flex items-center gap-2">
+                <span
+                  className={`inline-block w-2 h-2 rounded-full ${
+                    friend.status === "online" ? "bg-green-500" : "bg-gray-400"
+                  }`}
+                ></span>
+                <span className="text-sm">{friend.name}</span>
+                <span className="ml-auto text-xs text-gray-500">
+                  {friend.status}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </Card>
+
+        <Card className="flex flex-1 flex-col p-4 gap-4">
+          <div className="text-xs text-gray-500 uppercase tracking-wider">
+            Main Content
           </div>
-          <div className="mb-2 text-sm text-text/70 text-center">
-            {room.isPrivate ? "Private" : "Public"} |{" "}
-            {room.isAnonymous ? "Anonymous" : "Not Anonymous"}
+          <div className="flex-1 flex items-center justify-center text-gray-400">
+            {/* Placeholder for main content */}
+            Coming soon...
           </div>
         </Card>
       </div>
-    </Section>
+      {/* Desktop View */}
+      <div
+        className="hidden md:flex flex-1 h-full w-full max-w-6xl mx-auto"
+        style={{ minHeight: "60vh" }}
+      >
+        <div className="grid grid-cols-1 grid-rows-4 gap-4 md:grid-cols-[1fr_4fr] md:grid-rows-[1fr_4fr] h-full w-full">
+          {/* Top Left: Room ID */}
+          <Card className="flex items-center justify-center text-center p-4 min-h-25 md:col-start-1 md:col-end-2 md:row-start-1 md:row-end-2">
+            <div>
+              <div className="text-lg text-nowrap font-bold break-all">
+                {room.roomID}
+              </div>
+            </div>
+          </Card>
+
+          {/* Top Right: Room Name */}
+          <Card className="flex items-center justify-center text-center p-4 min-h-25 md:col-start-2 md:col-end-3 md:row-start-1 md:row-end-2">
+            <div>
+              <div className="text-xs text-gray-500 uppercase tracking-wider mb-1">
+                Room Name
+              </div>
+              <div className="text-lg font-bold">{room.name}</div>
+            </div>
+          </Card>
+
+          {/* Bottom Left: Friends List */}
+          <Card className="flex flex-col p-4 min-h-50 overflow-auto md:col-start-1 md:col-end-2 md:row-start-2 md:row-end-3">
+            <div className="text-xs text-gray-500 uppercase tracking-wider mb-2">
+              Friends
+            </div>
+            <ul className="space-y-2">
+              {friends.length === 0 && (
+                <li className="text-gray-400 text-sm">No friends online.</li>
+              )}
+              {friends.map((friend, idx) => (
+                <li key={idx} className="flex items-center gap-2">
+                  <span
+                    className={`inline-block w-2 h-2 rounded-full ${
+                      friend.status === "online"
+                        ? "bg-green-500"
+                        : "bg-gray-400"
+                    }`}
+                  ></span>
+                  <span className="text-sm">{friend.name}</span>
+                  <span className="ml-auto text-xs text-gray-500">
+                    {friend.status}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </Card>
+
+          {/* Bottom Right: Main Content */}
+          <Card className="flex flex-col p-4 min-h-50 md:col-start-2 md:col-end-3 md:row-start-2 md:row-end-3">
+            <div className="text-xs text-gray-500 uppercase tracking-wider mb-2">
+              Main Content
+            </div>
+            <div className="flex-1 flex items-center justify-center text-gray-400">
+              {/* Placeholder for main content */}
+              Coming soon...
+            </div>
+          </Card>
+        </div>
+      </div>
+    </div>
   );
 }
 
