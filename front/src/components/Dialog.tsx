@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useNavigate } from "react-router";
 import * as Ariakit from "@ariakit/react";
 import styles from "@front/components/Dialog.module.css";
-import { Button } from "@front/components/Button";
 
 interface DialogProps {
   open: boolean;

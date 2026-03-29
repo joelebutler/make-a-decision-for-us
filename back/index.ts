@@ -316,7 +316,7 @@ async function ADD_TO_ROOM(url: URL, body: string | null) {
     if (!body) {
       return new Response("Missing request body", { status: 400 });
     }
-    const { username } = JSON.parse(body);
+    const { username, password } = JSON.parse(body);
     const roomID = url.pathname.split("/")[url.pathname.split("/").length - 2];
     if (!roomID || !username) {
       return new Response("Missing roomID or username", { status: 400 });
@@ -329,6 +329,18 @@ async function ADD_TO_ROOM(url: URL, body: string | null) {
       const users = client.db(Bun.env.DB_NAME).collection(USER_DB);
       const room = await rooms.findOne({ roomID });
       if (!room) return new Response("Room not found", { status: 404 });
+
+      // Password check
+      if (room.password) {
+        if (!password) {
+          return new Response("Password required", { status: 401 });
+        }
+        const passwordMatch = await bcrypt.compare(password, room.password);
+        if (!passwordMatch) {
+          return new Response("Invalid password", { status: 401 });
+        }
+      }
+
       // Add user to room's members array if not present
       const updateResult = await rooms.updateOne(
         { roomID },
@@ -851,7 +863,8 @@ async function getRoomById(roomID?: string): Promise<Response> {
     if (!found) {
       return new Response("Room not found", { status: 404 });
     }
-    // Remove password from response
+    // Indicate if the room is locked with a password and remove it from response
+    found.isLocked = !!found.password;
     if (found.password) delete found.password;
     console.log(`Fetched room with id: ${roomID}`);
     return new Response(JSON.stringify(found), {
