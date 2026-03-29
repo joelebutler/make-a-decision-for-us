@@ -1,5 +1,24 @@
 # Kimaru - Make a Decision For Us!
 
+## Grizzhacks 8 Project
+
+This project will act as an archive for our project as it was completed at the time of submission.
+
+This was a fun experiment for us with using Gemini and AI Tools and while it has many areas for potential improvement, we felt it was best to keep this version intact here and continue development on the forked repository.
+
+## Installation Instructions
+
+1. Install Bun
+2. Clone the repository
+3. Set up a MongoDB database (local or remote).
+4. Copy the `.env.example` file as `.env` and fill in the values for the DB connection string + name, Gemini API key, and the port to use. 
+5. From the root, run `bun i`
+6. For a development server, run `bun run dev` or for a compiled bundle, run `bun run go`
+
+ ### Below is the README at the time of submission.
+
+<hr>
+
 ## 💡 Inspiration
 Hard decisions can come from anywhere. Whether you're trying to figure something out by yourself or stuck in "analysis paralysis" with a group of friends trying to decide on plans, things get complicated fast. We wanted a tool that helps weigh several different factors at once and actually finds viable options in real time.
 
